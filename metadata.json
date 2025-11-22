@@ -1,0 +1,7 @@
+{
+  "name": "Copy of PharmaCare Plus",
+  "description": "A modern pharmacy e-commerce platform with geolocation-based store finding, AI-powered admin tools, and seamless checkout.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
