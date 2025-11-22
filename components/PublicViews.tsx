@@ -221,9 +221,9 @@ export const Home = () => {
     const featuredProducts = useMemo(() => products.slice(0, 4), [products]);
 
     const categoryHighlights = [
-        { name: 'Vitamins', category: 'Vitamins & Supplements', image: 'https://images.unsplash.com/photo-1574835979236-533313724292?auto=format&fit=crop&q=80&w=200' },
+        { name: 'Vitamins', category: 'Vitamins & Supplements', image: 'https://images.unsplash.com/photo-1565071783280-719b01b29912' },
         { name: 'First Aid', category: 'First Aid', image: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&q=80&w=200' },
-        { name: 'Skincare', category: 'Skin Care', image: 'https://images.unsplash.com/photo-1596462502278-27bfdd403348?auto=format&fit=crop&q=80&w=200' },
+        { name: 'Skincare', category: 'Skin Care', image: 'https://images.unsplash.com/photo-1585945037805-5fd82c2e60b1' },
         { name: 'Pain Relief', category: 'Pain Relief', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=200' }
     ];
 
