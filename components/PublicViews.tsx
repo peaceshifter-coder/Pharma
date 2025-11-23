@@ -1,27 +1,28 @@
+
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product } from '../types';
-import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X } from 'lucide-react';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     const { addToCart, viewProduct } = useApp();
     return (
-        <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden border border-gray-100 flex flex-col h-full group">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full group hover-lift overflow-hidden">
             <div 
-                className="relative h-48 overflow-hidden bg-gray-100 cursor-pointer"
+                className="relative h-48 overflow-hidden bg-gray-50 cursor-pointer"
                 onClick={() => viewProduct(product)}
             >
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out" />
                 {product.requiresPrescription && (
-                    <span className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full border border-red-200">
+                    <span className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full border border-red-200 animate-scale-in">
                         Rx Required
                     </span>
                 )}
             </div>
             <div className="p-4 flex flex-col flex-grow">
-                <div className="text-xs text-emerald-600 font-semibold mb-1 uppercase tracking-wider">{product.category}</div>
+                <div className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">{product.category}</div>
                 <h3 
-                    className="font-bold text-gray-900 text-lg mb-1 leading-tight cursor-pointer hover:text-emerald-600 transition"
+                    className="font-bold text-gray-900 text-lg mb-1 leading-tight cursor-pointer hover:text-blue-600 transition"
                     onClick={() => viewProduct(product)}
                 >
                     {product.name}
@@ -31,7 +32,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                     <span className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
                     <button 
                         onClick={() => addToCart(product)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-full shadow-sm transition-colors"
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-95"
                         title="Add to Cart"
                     >
                         <Plus className="w-5 h-5" />
@@ -58,18 +59,18 @@ export const ProductDetail = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto px-4 md:px-0">
-            <button onClick={() => navigate('SHOP')} className="flex items-center text-gray-500 hover:text-emerald-600 mb-6 transition">
-                <ArrowLeft className="w-4 h-4 mr-1" /> Back to Shop
+        <div className="max-w-6xl mx-auto px-4 md:px-0 animate-fade-in-up">
+            <button onClick={() => navigate('SHOP')} className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition group">
+                <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Back to Shop
             </button>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     {/* Image Section */}
                     <div className="bg-gray-50 p-8 flex items-center justify-center relative">
-                         <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="max-h-[500px] w-full object-contain rounded-lg shadow-sm mix-blend-multiply" />
+                         <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="max-h-[500px] w-full object-contain rounded-lg shadow-sm mix-blend-multiply animate-scale-in" />
                          {selectedProduct.requiresPrescription && (
-                            <div className="absolute top-4 left-4 bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 flex items-center gap-1">
+                            <div className="absolute top-4 left-4 bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 flex items-center gap-1 animate-fade-in">
                                 <AlertCircle className="w-3 h-3" /> Prescription Required
                             </div>
                         )}
@@ -77,17 +78,13 @@ export const ProductDetail = () => {
 
                     {/* Info Section */}
                     <div className="p-8 md:p-12 flex flex-col">
-                        <div className="mb-6">
-                            <span className="text-emerald-600 font-semibold text-sm tracking-wide uppercase">{selectedProduct.category}</span>
+                        <div className="mb-6 animate-fade-in-up delay-100">
+                            <span className="text-blue-600 font-semibold text-sm tracking-wide uppercase">{selectedProduct.category}</span>
                             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">{selectedProduct.name}</h1>
                             
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="flex items-center text-yellow-400">
-                                    <Star className="w-5 h-5 fill-current" />
-                                    <Star className="w-5 h-5 fill-current" />
-                                    <Star className="w-5 h-5 fill-current" />
-                                    <Star className="w-5 h-5 fill-current" />
-                                    <Star className="w-5 h-5 text-gray-300" />
+                                    {[...Array(5)].map((_, i) => <Star key={i} className={`w-5 h-5 ${i < 4 ? 'fill-current' : 'text-gray-300'}`} />)}
                                     <span className="text-gray-500 text-sm ml-2 font-medium">(124 reviews)</span>
                                 </div>
                                 <span className="w-px h-5 bg-gray-300"></span>
@@ -108,28 +105,28 @@ export const ProductDetail = () => {
                                     <div className="flex items-center border border-gray-300 rounded-lg">
                                         <button 
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition border-r"
+                                            className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition border-r active:bg-gray-100"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
                                         <span className="w-12 text-center font-medium">{quantity}</span>
                                         <button 
                                             onClick={() => setQuantity(quantity + 1)}
-                                            className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition border-l"
+                                            className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition border-l active:bg-gray-100"
                                         >
                                             <Plus className="w-4 h-4" />
                                         </button>
                                     </div>
                                     <button 
                                         onClick={() => addToCart(selectedProduct, quantity)}
-                                        className="flex-1 bg-gray-900 text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg shadow-gray-200 flex items-center justify-center gap-2"
+                                        className="flex-1 bg-gray-900 text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-lg shadow-gray-200 flex items-center justify-center gap-2 transform hover:-translate-y-1 active:scale-95"
                                     >
                                         <ShoppingCart className="w-5 h-5" /> Add to Cart
                                     </button>
                                 </div>
                                 <button 
                                     onClick={handleBuyNow}
-                                    className="w-full bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-100"
+                                    className="w-full bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 transform hover:-translate-y-1 active:scale-95"
                                 >
                                     Buy Now
                                 </button>
@@ -137,23 +134,18 @@ export const ProductDetail = () => {
                         </div>
 
                         {/* Additional Features */}
-                        <div className="grid grid-cols-2 gap-4 mt-auto pt-8">
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="p-2 bg-emerald-50 rounded-full text-emerald-600"><Truck className="w-4 h-4" /></div>
-                                <span>Fast Delivery</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="p-2 bg-emerald-50 rounded-full text-emerald-600"><ShieldCheck className="w-4 h-4" /></div>
-                                <span>Secure Payment</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="p-2 bg-emerald-50 rounded-full text-emerald-600"><CheckCircle className="w-4 h-4" /></div>
-                                <span>Authentic Products</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                <div className="p-2 bg-emerald-50 rounded-full text-emerald-600"><Clock className="w-4 h-4" /></div>
-                                <span>24/7 Support</span>
-                            </div>
+                        <div className="grid grid-cols-2 gap-4 mt-auto pt-8 animate-fade-in-up delay-200">
+                            {[
+                                {icon: Truck, text: 'Fast Delivery'},
+                                {icon: ShieldCheck, text: 'Secure Payment'},
+                                {icon: CheckCircle, text: 'Authentic Products'},
+                                {icon: Clock, text: '24/7 Support'}
+                            ].map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3 text-sm text-gray-600">
+                                    <div className="p-2 bg-blue-50 rounded-full text-blue-600"><feature.icon className="w-4 h-4" /></div>
+                                    <span>{feature.text}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -161,22 +153,20 @@ export const ProductDetail = () => {
                 {/* Tabs Section */}
                 <div className="border-t border-gray-100">
                     <div className="flex border-b border-gray-100">
-                        <button 
-                            onClick={() => setActiveTab('DESC')}
-                            className={`px-8 py-4 font-bold text-sm tracking-wide transition ${activeTab === 'DESC' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-gray-500 hover:text-gray-800'}`}
-                        >
-                            Description
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('INFO')}
-                            className={`px-8 py-4 font-bold text-sm tracking-wide transition ${activeTab === 'INFO' ? 'text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50' : 'text-gray-500 hover:text-gray-800'}`}
-                        >
-                            Additional Info
-                        </button>
+                        {['DESC', 'INFO'].map((tab) => (
+                            <button 
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={`px-8 py-4 font-bold text-sm tracking-wide transition relative ${activeTab === tab ? 'text-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-gray-800'}`}
+                            >
+                                {tab === 'DESC' ? 'Description' : 'Additional Info'}
+                                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600"></div>}
+                            </button>
+                        ))}
                     </div>
-                    <div className="p-8 md:p-12 bg-gray-50/30">
+                    <div className="p-8 md:p-12 bg-gray-50/30 min-h-[200px]">
                         {activeTab === 'DESC' && (
-                            <div className="max-w-3xl text-gray-600 leading-relaxed space-y-4">
+                            <div className="max-w-3xl text-gray-600 leading-relaxed space-y-4 animate-fade-in">
                                 <p>Experience fast and effective relief with {selectedProduct.name}. Formulated by healthcare professionals, this product meets the highest standards of safety and efficacy.</p>
                                 <p>Whether you are at home or on the go, {selectedProduct.name} is your reliable companion for health and wellness. Trusted by thousands of customers for its consistent quality.</p>
                                 <ul className="list-disc pl-5 space-y-2 mt-4">
@@ -188,24 +178,19 @@ export const ProductDetail = () => {
                             </div>
                         )}
                         {activeTab === 'INFO' && (
-                            <div className="max-w-3xl">
+                            <div className="max-w-3xl animate-fade-in">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                                    <div className="flex justify-between border-b border-gray-200 py-3">
-                                        <span className="font-medium text-gray-900">Brand</span>
-                                        <span className="text-gray-600">PharmaCare Essentials</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 py-3">
-                                        <span className="font-medium text-gray-900">SKU</span>
-                                        <span className="text-gray-600">{selectedProduct.id}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 py-3">
-                                        <span className="font-medium text-gray-900">Form</span>
-                                        <span className="text-gray-600">Standard Pack</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-gray-200 py-3">
-                                        <span className="font-medium text-gray-900">Storage</span>
-                                        <span className="text-gray-600">Cool & Dry Place</span>
-                                    </div>
+                                    {[
+                                        ['Brand', 'PharmaCare Essentials'],
+                                        ['SKU', selectedProduct.id],
+                                        ['Form', 'Standard Pack'],
+                                        ['Storage', 'Cool & Dry Place']
+                                    ].map(([k, v]) => (
+                                        <div key={k} className="flex justify-between border-b border-gray-200 py-3">
+                                            <span className="font-medium text-gray-900">{k}</span>
+                                            <span className="text-gray-600">{v}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -217,15 +202,8 @@ export const ProductDetail = () => {
 };
 
 export const Home = () => {
-    const { products, navigate, setSelectedCategory } = useApp();
+    const { products, categories, navigate, setSelectedCategory, settings } = useApp();
     const featuredProducts = useMemo(() => products.slice(0, 4), [products]);
-
-    const categoryHighlights = [
-        { name: 'Vitamins', category: 'Vitamins & Supplements', image: 'https://images.unsplash.com/photo-1565071783280-719b01b29912' },
-        { name: 'First Aid', category: 'First Aid', image: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?auto=format&fit=crop&q=80&w=200' },
-        { name: 'Skincare', category: 'Skin Care', image: 'https://images.unsplash.com/photo-1585945037805-5fd82c2e60b1' },
-        { name: 'Pain Relief', category: 'Pain Relief', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=200' }
-    ];
 
     const handleCategoryClick = (categoryName: string) => {
         setSelectedCategory(categoryName);
@@ -233,36 +211,58 @@ export const Home = () => {
     };
 
     return (
-        <div className="space-y-12 pb-12">
+        <div className="space-y-16 pb-12 animate-fade-in">
             {/* Hero Section */}
-            <div className="relative bg-emerald-900 rounded-3xl overflow-hidden text-white shadow-2xl mx-4 md:mx-0">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?q=80&w=2000')] bg-cover bg-center opacity-25"></div>
+            <div className="relative bg-blue-900 rounded-3xl overflow-hidden text-white shadow-2xl mx-4 md:mx-0 animate-scale-in">
+                <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+                    style={{ backgroundImage: `url('${settings.hero.imageUrl || 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?q=80&w=2000'}')` }}
+                ></div>
                 <div className="relative z-10 p-12 md:p-20 text-center md:text-left">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Your Health, <br/><span className="text-emerald-300">Our Priority</span></h1>
-                    <p className="text-lg md:text-xl text-emerald-100 mb-8 max-w-xl">Get your medications delivered to your doorstep with the nearest pharmacy locator and trusted professionals.</p>
-                    <button onClick={() => { setSelectedCategory('All'); navigate('SHOP'); }} className="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition transform hover:scale-105 shadow-lg">
-                        Shop Now
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fade-in-up whitespace-pre-wrap">
+                        {settings.hero.title || "Your Health, Our Priority"}
+                    </h1>
+                    <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-xl animate-fade-in-up delay-100">
+                        {settings.hero.subtitle || "Get your medications delivered to your doorstep with the nearest pharmacy locator and trusted professionals."}
+                    </p>
+                    <button onClick={() => { setSelectedCategory('All'); navigate('SHOP'); }} className="bg-white text-blue-900 px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition transform hover:scale-105 shadow-lg animate-fade-in-up delay-200">
+                        {settings.hero.ctaText || "Shop Now"}
                     </button>
                 </div>
             </div>
 
             {/* Featured Categories */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 md:px-0">
-                {categoryHighlights.map((cat) => (
-                    <div key={cat.name} onClick={() => handleCategoryClick(cat.category)} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center cursor-pointer hover:border-emerald-300 transition group">
-                        <div className="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-emerald-200 transition">
-                            <img src={cat.image} className="w-full h-full object-cover" alt={cat.name} />
+            <div className="px-4 md:px-0">
+                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center md:text-left">Browse Categories</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {categories.map((cat, idx) => (
+                        <div 
+                            key={cat.id} 
+                            onClick={() => handleCategoryClick(cat.name)} 
+                            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center cursor-pointer hover:border-blue-300 transition group hover-lift animate-fade-in-up"
+                            style={{ animationDelay: `${idx * 100}ms` }}
+                        >
+                            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-gray-50 group-hover:border-blue-100 transition duration-300 bg-gray-50">
+                                <img src={cat.imageUrl || 'https://via.placeholder.com/200'} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt={cat.name} />
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-lg">{cat.name}</h3>
                         </div>
-                        <h3 className="font-semibold text-gray-800">{cat.name}</h3>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {/* Featured Products */}
             <div className="px-4 md:px-0">
-                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center md:text-left">Featured Products</h2>
+                <div className="flex justify-between items-end mb-8 px-2">
+                    <h2 className="text-3xl font-bold text-gray-800">Featured Products</h2>
+                    <button onClick={() => navigate('SHOP')} className="text-blue-600 font-semibold hover:text-blue-700 hover:underline">View All</button>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {featuredProducts.map(p => <ProductCard key={p.id} product={p} />)}
+                    {featuredProducts.map((p, idx) => (
+                        <div key={p.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                            <ProductCard product={p} />
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
@@ -282,13 +282,13 @@ export const Shop = () => {
     });
 
     return (
-        <div className="px-4 md:px-0">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="px-4 md:px-0 animate-fade-in">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-24 z-30">
                 <h2 className="text-2xl font-bold text-gray-800">Shop</h2>
-                <div className="flex flex-1 w-full md:w-auto gap-4 overflow-x-auto pb-2 md:pb-0">
+                <div className="flex flex-1 w-full md:w-auto gap-4 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
                      <button 
                         onClick={() => setSelectedCategory('All')} 
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${selectedCategory === 'All' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${selectedCategory === 'All' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                     >
                         All
                     </button>
@@ -296,7 +296,7 @@ export const Shop = () => {
                         <button 
                             key={c.id} 
                             onClick={() => setSelectedCategory(c.name)} 
-                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${selectedCategory === c.name ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${selectedCategory === c.name ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
                             {c.name}
                         </button>
@@ -305,17 +305,22 @@ export const Shop = () => {
             </div>
             
             {searchQuery && (
-                <div className="mb-6 text-sm text-gray-500">
+                <div className="mb-6 text-sm text-gray-500 animate-fade-in">
                     Showing results for "<span className="font-bold text-gray-800">{searchQuery}</span>"
                 </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filtered.length > 0 ? (
-                    filtered.map(p => <ProductCard key={p.id} product={p} />)
+                    filtered.map((p, idx) => (
+                        <div key={p.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                            <ProductCard product={p} />
+                        </div>
+                    ))
                 ) : (
-                    <div className="col-span-full text-center py-20 text-gray-400">
-                        <p>No products found matching your criteria.</p>
+                    <div className="col-span-full text-center py-20 text-gray-400 bg-gray-50 rounded-xl border-dashed border-2 border-gray-200">
+                        <p className="text-lg">No products found matching your criteria.</p>
+                        <button onClick={() => setSelectedCategory('All')} className="mt-4 text-blue-600 hover:underline">Clear Filters</button>
                     </div>
                 )}
             </div>
@@ -324,7 +329,7 @@ export const Shop = () => {
 };
 
 export const Checkout = () => {
-    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings } = useApp();
+    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings, attachPrescription } = useApp();
     const [step, setStep] = useState<'CART' | 'DETAILS' | 'SUCCESS'>('CART');
     const [loading, setLoading] = useState(false);
     const [address, setAddress] = useState(user?.savedAddresses[0] || '');
@@ -334,6 +339,11 @@ export const Checkout = () => {
     const [cvc, setCvc] = useState('');
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Identify items needing Rx without proof
+    const pendingRxItems = useMemo(() => {
+        return cart.filter(item => item.requiresPrescription && !item.prescriptionProof);
+    }, [cart]);
 
     // Ensure at least one payment method is selected if available
     React.useEffect(() => {
@@ -352,17 +362,25 @@ export const Checkout = () => {
         }, 2000);
     };
 
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, productId: string) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Simulate upload by using the filename
+            attachPrescription(productId, file.name);
+        }
+    };
+
     const availablePaymentMethods = settings.paymentMethods.filter(pm => pm.enabled);
 
     if (step === 'SUCCESS') {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-                <div className="bg-green-100 p-6 rounded-full mb-6">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-scale-in">
+                <div className="bg-green-100 p-6 rounded-full mb-6 animate-bounce">
                     <CheckCircle className="w-16 h-16 text-green-600" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">Order Confirmed!</h2>
                 <p className="text-gray-600 mb-8 max-w-md">Thank you for your purchase. We have received your order and will begin processing it immediately from your nearest store.</p>
-                <button onClick={() => navigate('HOME')} className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
+                <button onClick={() => navigate('HOME')} className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105">
                     Return Home
                 </button>
             </div>
@@ -371,45 +389,101 @@ export const Checkout = () => {
 
     if (cart.length === 0 && step === 'CART') {
          return (
-            <div className="text-center py-20">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <div className="text-center py-20 animate-fade-in">
+                <ShoppingCart className="w-20 h-20 text-gray-200 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-700 mb-2">Your cart is empty</h2>
-                <button onClick={() => navigate('SHOP')} className="text-emerald-600 hover:text-emerald-800 font-medium underline">Start Shopping</button>
+                <button onClick={() => navigate('SHOP')} className="text-blue-600 hover:text-blue-800 font-medium underline mt-2">Start Shopping</button>
             </div>
          );
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 md:px-0">
+        <div className="max-w-4xl mx-auto px-4 md:px-0 animate-fade-in-up">
             <h2 className="text-3xl font-bold mb-8 text-gray-800">{step === 'CART' ? 'Shopping Cart' : 'Checkout Details'}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 space-y-6">
                     {step === 'CART' ? (
-                        cart.map(item => (
-                            <div key={item.id} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                                <img src={item.imageUrl} alt={item.name} className="w-24 h-24 rounded-lg object-cover bg-gray-100" />
-                                <div className="flex-grow flex flex-col justify-between">
+                        <>
+                            {pendingRxItems.length > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
+                                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                                     <div>
-                                        <h3 className="font-bold text-gray-800">{item.name}</h3>
-                                        <p className="text-sm text-gray-500">{item.category}</p>
+                                        <h3 className="font-bold text-red-800">Prescription Required</h3>
+                                        <p className="text-sm text-red-700 mt-1">Some items in your cart require a valid prescription. Please upload the necessary documents below to proceed.</p>
                                     </div>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
-                                            <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="p-1 hover:bg-white rounded shadow-sm"><Minus className="w-4 h-4 text-gray-600"/></button>
-                                            <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                                            <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="p-1 hover:bg-white rounded shadow-sm"><Plus className="w-4 h-4 text-gray-600"/></button>
+                                </div>
+                            )}
+
+                            {cart.map((item, idx) => (
+                                <div key={item.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                                    <div className="flex gap-4">
+                                        <img src={item.imageUrl} alt={item.name} className="w-24 h-24 rounded-lg object-cover bg-gray-50" />
+                                        <div className="flex-grow flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="font-bold text-gray-800">{item.name}</h3>
+                                                <p className="text-sm text-gray-500">{item.category}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
+                                                    <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="p-1 hover:bg-white rounded shadow-sm"><Minus className="w-4 h-4 text-gray-600"/></button>
+                                                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                                                    <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="p-1 hover:bg-white rounded shadow-sm"><Plus className="w-4 h-4 text-gray-600"/></button>
+                                                </div>
+                                                <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition"><Trash2 className="w-5 h-5" /></button>
+                                            </div>
                                         </div>
-                                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 p-2"><Trash2 className="w-5 h-5" /></button>
+                                        <div className="text-right">
+                                            <p className="font-bold text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                                        </div>
                                     </div>
+
+                                    {/* Prescription Upload Logic */}
+                                    {item.requiresPrescription && (
+                                        <div className="border-t border-gray-100 pt-3 mt-1">
+                                            {item.prescriptionProof ? (
+                                                <div className="flex items-center justify-between bg-blue-50 border border-blue-100 p-3 rounded-lg">
+                                                    <div className="flex items-center gap-2 text-blue-700">
+                                                        <FileText className="w-4 h-4" />
+                                                        <span className="text-sm font-medium truncate max-w-[200px]">{item.prescriptionProof}</span>
+                                                        <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">Uploaded</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => attachPrescription(item.id, '')} 
+                                                        className="text-gray-400 hover:text-red-500 p-1"
+                                                        title="Remove Prescription"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-3">
+                                                    <label className="flex-1 cursor-pointer group">
+                                                        <div className="flex items-center gap-3 w-full p-3 border-2 border-dashed border-red-200 rounded-lg hover:border-red-400 hover:bg-red-50 transition">
+                                                            <div className="bg-red-100 p-2 rounded-full group-hover:bg-red-200 text-red-600">
+                                                                <Upload className="w-4 h-4" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-sm font-bold text-gray-700">Upload Prescription</p>
+                                                                <p className="text-xs text-red-500">Required for this item</p>
+                                                            </div>
+                                                        </div>
+                                                        <input 
+                                                            type="file" 
+                                                            className="hidden" 
+                                                            accept=".jpg,.png,.pdf"
+                                                            onChange={(e) => handleFileUpload(e, item.id)}
+                                                        />
+                                                    </label>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-lg">${(item.price * item.quantity).toFixed(2)}</p>
-                                </div>
-                            </div>
-                        ))
+                            ))}
+                        </>
                     ) : (
-                        <div className="space-y-6">
+                        <div className="space-y-6 animate-fade-in">
                             {/* Shipping Info */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                                 <h3 className="font-bold text-lg mb-4">Shipping Information</h3>
@@ -434,13 +508,13 @@ export const Checkout = () => {
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="First Name" className="border p-3 rounded-lg w-full" defaultValue={user?.name.split(' ')[0]} />
-                                    <input type="text" placeholder="Last Name" className="border p-3 rounded-lg w-full" defaultValue={user?.name.split(' ')[1]} />
+                                    <input type="text" placeholder="First Name" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" defaultValue={user?.name.split(' ')[0]} />
+                                    <input type="text" placeholder="Last Name" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" defaultValue={user?.name.split(' ')[1]} />
                                 </div>
-                                <input type="text" placeholder="Address" className="border p-3 rounded-lg w-full" value={address} onChange={e => setAddress(e.target.value)} />
+                                <input type="text" placeholder="Address" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" value={address} onChange={e => setAddress(e.target.value)} />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="City" className="border p-3 rounded-lg w-full" />
-                                    <input type="text" placeholder="ZIP Code" className="border p-3 rounded-lg w-full" />
+                                    <input type="text" placeholder="City" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
+                                    <input type="text" placeholder="ZIP Code" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
                                 </div>
                             </div>
 
@@ -450,7 +524,7 @@ export const Checkout = () => {
                                 <div className="grid gap-3">
                                     {availablePaymentMethods.length === 0 && <p className="text-red-500">No payment methods available.</p>}
                                     {availablePaymentMethods.map(pm => (
-                                        <label key={pm.id} className={`flex items-center p-4 border rounded-lg cursor-pointer transition ${selectedPaymentMethod === pm.id ? 'border-emerald-500 bg-emerald-50' : 'hover:border-gray-300'}`}>
+                                        <label key={pm.id} className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all ${selectedPaymentMethod === pm.id ? 'border-blue-500 bg-blue-50 shadow-sm' : 'hover:border-gray-300'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="payment" 
@@ -460,8 +534,8 @@ export const Checkout = () => {
                                                 onChange={() => setSelectedPaymentMethod(pm.id)}
                                             />
                                             <div className="flex items-center gap-3 w-full">
-                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${selectedPaymentMethod === pm.id ? 'border-emerald-600' : 'border-gray-300'}`}>
-                                                    {selectedPaymentMethod === pm.id && <div className="w-3 h-3 rounded-full bg-emerald-600"></div>}
+                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${selectedPaymentMethod === pm.id ? 'border-blue-600' : 'border-gray-300'}`}>
+                                                    {selectedPaymentMethod === pm.id && <div className="w-3 h-3 rounded-full bg-blue-600"></div>}
                                                 </div>
                                                 {pm.type === 'card' && <CreditCard className="w-5 h-5 text-gray-600" />}
                                                 {pm.type === 'cod' && <Banknote className="w-5 h-5 text-gray-600" />}
@@ -474,12 +548,12 @@ export const Checkout = () => {
 
                                 {/* Card Details Form (Simulated) */}
                                 {availablePaymentMethods.find(pm => pm.id === selectedPaymentMethod)?.type === 'card' && (
-                                    <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3 animate-in slide-in-from-top-2">
+                                    <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3 animate-fade-in-up">
                                         <h4 className="font-semibold text-gray-700">Card Details</h4>
                                         <input 
                                             type="text" 
                                             placeholder="Card Number" 
-                                            className="w-full p-3 border rounded-lg bg-white"
+                                            className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                                             value={cardNumber}
                                             onChange={e => setCardNumber(e.target.value)}
                                         />
@@ -487,14 +561,14 @@ export const Checkout = () => {
                                             <input 
                                                 type="text" 
                                                 placeholder="MM/YY" 
-                                                className="w-full p-3 border rounded-lg bg-white"
+                                                className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                                                 value={expiry}
                                                 onChange={e => setExpiry(e.target.value)}
                                             />
                                             <input 
                                                 type="text" 
                                                 placeholder="CVC" 
-                                                className="w-full p-3 border rounded-lg bg-white"
+                                                className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                                                 value={cvc}
                                                 onChange={e => setCvc(e.target.value)}
                                             />
@@ -503,7 +577,7 @@ export const Checkout = () => {
                                 )}
                                 
                                 {availablePaymentMethods.find(pm => pm.id === selectedPaymentMethod)?.type === 'cod' && (
-                                     <div className="mt-4 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 p-3 rounded border border-emerald-100">
+                                     <div className="mt-4 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 p-3 rounded border border-blue-100 animate-fade-in">
                                         <CheckCircle className="w-4 h-4" />
                                         You will pay in cash upon delivery.
                                      </div>
@@ -514,7 +588,7 @@ export const Checkout = () => {
                 </div>
 
                 <div className="md:col-span-1">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-24 transition-all">
                         <h3 className="font-bold text-lg mb-4">Order Summary</h3>
                         <div className="space-y-2 mb-6">
                             <div className="flex justify-between text-gray-600">
@@ -536,15 +610,23 @@ export const Checkout = () => {
                         </div>
                         
                         {step === 'CART' ? (
-                            <button onClick={() => setStep('DETAILS')} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 transition">
-                                Proceed to Checkout
+                            <button 
+                                onClick={() => setStep('DETAILS')} 
+                                disabled={pendingRxItems.length > 0}
+                                className={`w-full py-3 rounded-lg font-bold transition transform active:scale-95 ${
+                                    pendingRxItems.length > 0 
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105'
+                                }`}
+                            >
+                                {pendingRxItems.length > 0 ? 'Upload Prescriptions to Proceed' : 'Proceed to Checkout'}
                             </button>
                         ) : (
                             <>
                                 <button 
                                     onClick={handlePayment} 
                                     disabled={loading || !selectedPaymentMethod} 
-                                    className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 transition disabled:bg-gray-400 flex justify-center items-center"
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:bg-gray-400 flex justify-center items-center"
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -556,6 +638,30 @@ export const Checkout = () => {
                             </>
                         )}
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const PageView = () => {
+    const { selectedPage, navigate } = useApp();
+
+    if (!selectedPage) {
+        navigate('HOME');
+        return null;
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto px-4 md:px-0 py-8 animate-fade-in-up">
+             <button onClick={() => navigate('HOME')} className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition group">
+                <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Back to Home
+            </button>
+            <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{selectedPage.title}</h1>
+                <p className="text-sm text-gray-500 mb-8">Last updated: {selectedPage.lastUpdated}</p>
+                <div className="prose prose-blue max-w-none text-gray-600 whitespace-pre-wrap leading-relaxed">
+                    {selectedPage.content}
                 </div>
             </div>
         </div>

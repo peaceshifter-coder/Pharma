@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
-import { AdminDashboard, AdminProducts, AdminStores, AdminSettings, AdminCategories, AdminOrders } from './components/AdminViews';
-import { Home, Shop, Checkout, ProductDetail } from './components/PublicViews';
+import { AdminDashboard, AdminProducts, AdminStores, AdminSettings, AdminCategories, AdminOrders, AdminPages } from './components/AdminViews';
+import { Home, Shop, Checkout, ProductDetail, PageView } from './components/PublicViews';
 import { Login, Register, UserProfile } from './components/AuthViews';
 import { findNearestStore } from './services/geo.ts';
-import { ShoppingCart, MapPin, Menu, X, Settings, LayoutDashboard, Package, Store as StoreIcon, Layers, User as UserIcon, ShieldCheck, ChevronDown, ClipboardList, Search, Phone, Mail, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { ShoppingCart, MapPin, Menu, X, Settings, LayoutDashboard, Package, Store as StoreIcon, Layers, User as UserIcon, ShieldCheck, ChevronDown, ClipboardList, Search, Phone, Mail, CheckCircle, AlertCircle, Info, Loader2, FileText } from 'lucide-react';
 
 // --- Toast Container ---
 const ToastContainer = () => {
@@ -16,7 +17,7 @@ const ToastContainer = () => {
                     key={t.id} 
                     onClick={() => removeToast(t.id)}
                     className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 animate-in slide-in-from-right cursor-pointer ${
-                        t.type === 'success' ? 'bg-emerald-600 text-white' : 
+                        t.type === 'success' ? 'bg-blue-600 text-white' : 
                         t.type === 'error' ? 'bg-red-500 text-white' : 
                         'bg-gray-800 text-white'
                     }`}
@@ -69,7 +70,7 @@ const Navbar = () => {
             </div>
 
             {/* Nearest Store Indicator - Desktop */}
-            <div className="hidden lg:flex items-center text-sm bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">
+            <div className="hidden lg:flex items-center text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
                 <MapPin className="w-3 h-3 mr-1.5" />
                 <span className="font-medium truncate max-w-[200px]">
                     {nearest ? `${nearest}` : "Locating..."}
@@ -85,7 +86,7 @@ const Navbar = () => {
                   </div>
                   <input 
                     type="text" 
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors" 
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors" 
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={handleSearch}
@@ -96,13 +97,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-6">
              {/* Categories Dropdown */}
             <div className="relative group h-full flex items-center">
-                <button className="text-gray-600 hover:text-emerald-600 font-medium transition flex items-center gap-1 h-full">
+                <button className="text-gray-600 hover:text-blue-600 font-medium transition flex items-center gap-1 h-full">
                     Categories <ChevronDown className="w-4 h-4" />
                 </button>
                 <div className="absolute top-14 right-0 w-56 bg-white shadow-xl rounded-xl border border-gray-100 py-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-2">
                     <button
                         onClick={() => { setSelectedCategory('All'); navigate('SHOP'); }}
-                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 font-medium text-sm"
+                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium text-sm"
                     >
                         All Categories
                     </button>
@@ -111,7 +112,7 @@ const Navbar = () => {
                         <button
                             key={c.id}
                             onClick={() => { setSelectedCategory(c.name); navigate('SHOP'); }}
-                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 text-sm"
+                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 text-sm"
                         >
                             {c.name}
                         </button>
@@ -119,15 +120,15 @@ const Navbar = () => {
                 </div>
             </div>
 
-            <button onClick={() => navigate('SHOP')} className="text-gray-600 hover:text-emerald-600 font-medium transition">Shop</button>
+            <button onClick={() => navigate('SHOP')} className="text-gray-600 hover:text-blue-600 font-medium transition">Shop</button>
             {user?.role === 'admin' && (
-                 <button onClick={() => navigate('ADMIN')} className="text-gray-600 hover:text-emerald-600 font-medium transition flex items-center gap-1">
+                 <button onClick={() => navigate('ADMIN')} className="text-gray-600 hover:text-blue-600 font-medium transition flex items-center gap-1">
                     <ShieldCheck className="w-4 h-4" /> Admin
                  </button>
             )}
             
             <div className="flex items-center gap-4 border-l pl-6 border-gray-200">
-                <button onClick={() => navigate('CHECKOUT')} className="relative p-2 text-gray-600 hover:text-emerald-600 transition">
+                <button onClick={() => navigate('CHECKOUT')} className="relative p-2 text-gray-600 hover:text-blue-600 transition">
                 <ShoppingCart className="w-6 h-6" />
                 {cart.length > 0 && (
                     <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-500 rounded-full">
@@ -136,7 +137,7 @@ const Navbar = () => {
                 )}
                 </button>
 
-                <button onClick={() => navigate(user ? 'PROFILE' : 'LOGIN')} className="p-2 text-gray-600 hover:text-emerald-600 transition flex items-center gap-2">
+                <button onClick={() => navigate(user ? 'PROFILE' : 'LOGIN')} className="p-2 text-gray-600 hover:text-blue-600 transition flex items-center gap-2">
                     <div className="bg-gray-100 rounded-full p-1">
                         <UserIcon className="w-5 h-5" />
                     </div>
@@ -173,7 +174,7 @@ const Navbar = () => {
                   </div>
                   <input 
                     type="text" 
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={handleSearch}
@@ -181,12 +182,12 @@ const Navbar = () => {
               </div>
 
             {/* Mobile Location */}
-            <div className="flex items-center text-sm text-emerald-700 bg-emerald-50 p-3 rounded-lg">
+            <div className="flex items-center text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
                 <MapPin className="w-4 h-4 mr-2" />
                 <span className="font-medium">{nearest ? `${nearest}` : "Locating..."}</span>
             </div>
 
-            <button onClick={() => { navigate('HOME'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 w-full text-left">Home</button>
+            <button onClick={() => { navigate('HOME'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">Home</button>
             
             {/* Mobile Categories List */}
             <div className="px-3 py-2">
@@ -195,20 +196,20 @@ const Navbar = () => {
                     <button
                         key={c.id}
                         onClick={() => { setSelectedCategory(c.name); navigate('SHOP'); setMobileMenuOpen(false); }}
-                        className="block w-full text-left px-2 py-2 text-gray-600 hover:text-emerald-600 text-sm"
+                        className="block w-full text-left px-2 py-2 text-gray-600 hover:text-blue-600 text-sm"
                     >
                         {c.name}
                     </button>
                 ))}
             </div>
 
-            <button onClick={() => { navigate('SHOP'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 w-full text-left">Shop All</button>
+            <button onClick={() => { navigate('SHOP'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">Shop All</button>
             {user?.role === 'admin' && (
-                 <button onClick={() => { navigate('ADMIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 w-full text-left flex items-center gap-2">
+                 <button onClick={() => { navigate('ADMIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4" /> Admin
                  </button>
             )}
-            <button onClick={() => { navigate(user ? 'PROFILE' : 'LOGIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 w-full text-left">
+            <button onClick={() => { navigate(user ? 'PROFILE' : 'LOGIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">
                 {user ? 'My Profile' : 'Sign In'}
             </button>
           </div>
@@ -220,10 +221,10 @@ const Navbar = () => {
 
 // --- Footer Component ---
 const Footer = () => {
-    const { settings, navigate, categories, setSelectedCategory } = useApp();
+    const { settings, navigate, categories, setSelectedCategory, viewPage } = useApp();
 
     return (
-        <footer className="bg-emerald-950 text-emerald-50 pt-16 pb-8">
+        <footer className="bg-blue-950 text-blue-50 pt-16 pb-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Brand Section */}
@@ -232,14 +233,14 @@ const Footer = () => {
                             <img src={settings.logoUrl} alt="Logo" className="h-10 w-10 brightness-0 invert" />
                             <span className="font-bold text-2xl text-white">{settings.siteName}</span>
                         </div>
-                        <p className="text-emerald-200/80 text-sm leading-relaxed">
-                            Your trusted partner in health and wellness. We provide high-quality medicines, health products, and professional care right to your doorstep.
+                        <p className="text-blue-200/80 text-sm leading-relaxed">
+                            {settings.footerAboutText || 'Your trusted partner in health and wellness.'}
                         </p>
                         <div className="flex gap-4 pt-4">
                             {/* Social Placeholders */}
-                            <div className="w-8 h-8 bg-emerald-900 rounded-full flex items-center justify-center hover:bg-emerald-700 transition cursor-pointer text-white text-xs font-bold">FB</div>
-                            <div className="w-8 h-8 bg-emerald-900 rounded-full flex items-center justify-center hover:bg-emerald-700 transition cursor-pointer text-white text-xs font-bold">TW</div>
-                            <div className="w-8 h-8 bg-emerald-900 rounded-full flex items-center justify-center hover:bg-emerald-700 transition cursor-pointer text-white text-xs font-bold">IG</div>
+                            <div className="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center hover:bg-blue-700 transition cursor-pointer text-white text-xs font-bold">FB</div>
+                            <div className="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center hover:bg-blue-700 transition cursor-pointer text-white text-xs font-bold">TW</div>
+                            <div className="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center hover:bg-blue-700 transition cursor-pointer text-white text-xs font-bold">IG</div>
                         </div>
                     </div>
 
@@ -247,10 +248,10 @@ const Footer = () => {
                     <div>
                         <h3 className="font-bold text-white text-lg mb-6">Quick Links</h3>
                         <ul className="space-y-3 text-sm">
-                            <li><button onClick={() => navigate('HOME')} className="text-emerald-200/80 hover:text-white transition">Home</button></li>
-                            <li><button onClick={() => navigate('SHOP')} className="text-emerald-200/80 hover:text-white transition">Shop All</button></li>
-                            <li><button onClick={() => navigate('LOGIN')} className="text-emerald-200/80 hover:text-white transition">My Account</button></li>
-                            <li><button onClick={() => navigate('CHECKOUT')} className="text-emerald-200/80 hover:text-white transition">Track Order</button></li>
+                            <li><button onClick={() => navigate('HOME')} className="text-blue-200/80 hover:text-white transition">Home</button></li>
+                            <li><button onClick={() => navigate('SHOP')} className="text-blue-200/80 hover:text-white transition">Shop All</button></li>
+                            <li><button onClick={() => navigate('LOGIN')} className="text-blue-200/80 hover:text-white transition">My Account</button></li>
+                            <li><button onClick={() => navigate('CHECKOUT')} className="text-blue-200/80 hover:text-white transition">Track Order</button></li>
                         </ul>
                     </div>
 
@@ -260,7 +261,7 @@ const Footer = () => {
                         <ul className="space-y-3 text-sm">
                             {categories.slice(0, 5).map(c => (
                                 <li key={c.id}>
-                                    <button onClick={() => { setSelectedCategory(c.name); navigate('SHOP'); }} className="text-emerald-200/80 hover:text-white transition">{c.name}</button>
+                                    <button onClick={() => { setSelectedCategory(c.name); navigate('SHOP'); }} className="text-blue-200/80 hover:text-white transition">{c.name}</button>
                                 </li>
                             ))}
                         </ul>
@@ -271,27 +272,27 @@ const Footer = () => {
                         <h3 className="font-bold text-white text-lg mb-6">Contact Us</h3>
                         <ul className="space-y-4 text-sm">
                             <li className="flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                                <span className="text-emerald-100">123 Health Avenue, Medical District,<br/>New York, NY 10001</span>
+                                <MapPin className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                                <span className="text-blue-100 whitespace-pre-wrap">{settings.contact?.address || '123 Health Avenue'}</span>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Phone className="w-5 h-5 text-emerald-400 shrink-0" />
-                                <span className="text-emerald-100">(555) 123-4567</span>
+                                <Phone className="w-5 h-5 text-blue-400 shrink-0" />
+                                <span className="text-blue-100">{settings.contact?.phone || '(555) 123-4567'}</span>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Mail className="w-5 h-5 text-emerald-400 shrink-0" />
-                                <span className="text-emerald-100">support@pharmacareplus.com</span>
+                                <Mail className="w-5 h-5 text-blue-400 shrink-0" />
+                                <span className="text-blue-100">{settings.contact?.email || 'support@pharmacareplus.com'}</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-emerald-900 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-emerald-400">
+                <div className="border-t border-blue-900 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-blue-400">
                     <p>&copy; {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
                     <div className="flex gap-6 mt-4 md:mt-0">
-                        <button className="hover:text-white transition">Privacy Policy</button>
-                        <button className="hover:text-white transition">Terms of Service</button>
-                        <button className="hover:text-white transition">Cookie Policy</button>
+                        <button onClick={() => viewPage('privacy-policy')} className="hover:text-white transition">Privacy Policy</button>
+                        <button onClick={() => viewPage('terms-of-service')} className="hover:text-white transition">Terms of Service</button>
+                        <button onClick={() => viewPage('cookie-policy')} className="hover:text-white transition">Cookie Policy</button>
                     </div>
                 </div>
             </div>
@@ -306,7 +307,7 @@ const AdminLayout = () => {
     const NavItem = ({ view, icon: Icon, label }: any) => (
         <button 
             onClick={() => setAdminView(view)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${adminView === view ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${adminView === view ? 'bg-blue-100 text-blue-800 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
         >
             <Icon className="w-5 h-5" />
             {label}
@@ -319,7 +320,7 @@ const AdminLayout = () => {
             <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col h-screen sticky top-0">
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center gap-2 font-bold text-xl text-gray-800 cursor-pointer" onClick={() => navigate('HOME')}>
-                        <div className="bg-emerald-600 text-white p-1 rounded">Admin</div>
+                        <div className="bg-blue-600 text-white p-1 rounded">Admin</div>
                         <span>Panel</span>
                     </div>
                 </div>
@@ -329,6 +330,7 @@ const AdminLayout = () => {
                     <NavItem view="PRODUCTS" icon={Package} label="Products" />
                     <NavItem view="CATEGORIES" icon={Layers} label="Categories" />
                     <NavItem view="STORES" icon={StoreIcon} label="Stores" />
+                    <NavItem view="PAGES" icon={FileText} label="Pages" />
                     <NavItem view="SETTINGS" icon={Settings} label="Settings" />
                 </div>
                 <div className="p-4 border-t border-gray-200">
@@ -343,6 +345,7 @@ const AdminLayout = () => {
                 {adminView === 'PRODUCTS' && <AdminProducts />}
                 {adminView === 'CATEGORIES' && <AdminCategories />}
                 {adminView === 'STORES' && <AdminStores />}
+                {adminView === 'PAGES' && <AdminPages />}
                 {adminView === 'SETTINGS' && <AdminSettings />}
             </main>
         </div>
@@ -351,7 +354,18 @@ const AdminLayout = () => {
 
 // --- Main Layout Switcher ---
 const MainContent = () => {
-    const { view, user } = useApp();
+    const { view, user, appLoading } = useApp();
+
+    if (appLoading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+                <div className="bg-white p-8 rounded-2xl shadow-lg flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500">
+                     <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                     <p className="text-gray-500 font-medium">Connecting to Database...</p>
+                </div>
+            </div>
+        );
+    }
 
     // Simple protection: if viewing ADMIN but not admin user, show login
     if (view === 'ADMIN' && user?.role !== 'admin') {
@@ -385,6 +399,7 @@ const MainContent = () => {
                 {view === 'HOME' && <Home />}
                 {view === 'SHOP' && <Shop />}
                 {view === 'PRODUCT' && <ProductDetail />}
+                {view === 'PAGE' && <PageView />}
                 {view === 'CHECKOUT' && <Checkout />}
                 {view === 'LOGIN' && <Login />}
                 {view === 'REGISTER' && <Register />}

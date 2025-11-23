@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { User, Lock, Mail, MapPin, Package, LogOut, User as UserIcon, Plus, Trash2 } from 'lucide-react';
@@ -6,10 +7,13 @@ export const Login = () => {
     const { login, navigate } = useApp();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        const user = login(email, password);
+        setLoading(true);
+        const user = await login(email, password);
+        setLoading(false);
         if (user) {
             if (user.role === 'admin') {
                 navigate('ADMIN');
@@ -25,11 +29,11 @@ export const Login = () => {
     }
 
     return (
-        <div className="min-h-[60vh] flex items-center justify-center px-4">
-            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="min-h-[60vh] flex items-center justify-center px-4 animate-fade-in-up">
+            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100 transform transition-all hover:shadow-xl">
                 <div className="text-center mb-8">
-                    <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Lock className="w-6 h-6 text-emerald-600" />
+                    <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                        <Lock className="w-6 h-6 text-blue-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
                     <p className="text-gray-500">Sign in to your account</p>
@@ -43,7 +47,7 @@ export const Login = () => {
                             <input 
                                 type="email" 
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="you@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -53,28 +57,32 @@ export const Login = () => {
                     <div>
                         <div className="flex justify-between mb-1">
                             <label className="block text-sm font-medium text-gray-700">Password</label>
-                            <button type="button" onClick={handleReset} className="text-xs text-emerald-600 hover:underline">Forgot password?</button>
+                            <button type="button" onClick={handleReset} className="text-xs text-blue-600 hover:underline">Forgot password?</button>
                         </div>
                         <div className="relative">
                             <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
                             <input 
                                 type="password" 
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                     </div>
-                    <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded-lg font-bold hover:bg-emerald-700 transition">
-                        Sign In
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center items-center"
+                    >
+                        {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Sign In'}
                     </button>
                 </form>
 
                 <div className="mt-6 text-center text-sm text-gray-500">
                     Don't have an account? 
-                    <button onClick={() => navigate('REGISTER')} className="text-emerald-600 font-semibold hover:underline ml-1">Create Account</button>
+                    <button onClick={() => navigate('REGISTER')} className="text-blue-600 font-semibold hover:underline ml-1">Create Account</button>
                 </div>
             </div>
         </div>
@@ -86,19 +94,24 @@ export const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
-        register(name, email);
-        navigate('HOME');
+        setLoading(true);
+        setTimeout(() => {
+            register(name, email);
+            setLoading(false);
+            navigate('HOME');
+        }, 800);
     };
 
     return (
-        <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="min-h-[60vh] flex items-center justify-center px-4 animate-fade-in-up">
             <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center mb-8">
-                    <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <User className="w-6 h-6 text-emerald-600" />
+                    <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                        <User className="w-6 h-6 text-blue-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800">Create Account</h2>
                     <p className="text-gray-500">Join PharmaCare Plus today</p>
@@ -112,7 +125,7 @@ export const Register = () => {
                             <input 
                                 type="text" 
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="John Doe"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
@@ -126,7 +139,7 @@ export const Register = () => {
                             <input 
                                 type="email" 
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="you@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -140,21 +153,21 @@ export const Register = () => {
                             <input 
                                 type="password" 
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                     </div>
-                    <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded-lg font-bold hover:bg-emerald-700 transition">
-                        Create Account
+                    <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center items-center">
+                         {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Create Account'}
                     </button>
                 </form>
 
                 <div className="mt-6 text-center text-sm text-gray-500">
                     Already have an account? 
-                    <button onClick={() => navigate('LOGIN')} className="text-emerald-600 font-semibold hover:underline ml-1">Sign In</button>
+                    <button onClick={() => navigate('LOGIN')} className="text-blue-600 font-semibold hover:underline ml-1">Sign In</button>
                 </div>
             </div>
         </div>
@@ -177,12 +190,12 @@ export const UserProfile = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4 animate-fade-in-up">
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Sidebar */}
                 <div className="md:w-1/4">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-emerald-700">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center sticky top-24">
+                        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-blue-700 animate-scale-in">
                             {user.name.charAt(0).toUpperCase()}
                         </div>
                         <h2 className="font-bold text-gray-800 text-lg">{user.name}</h2>
@@ -191,13 +204,13 @@ export const UserProfile = () => {
                         <nav className="space-y-2 text-left">
                             <button 
                                 onClick={() => setActiveTab('ORDERS')}
-                                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition ${activeTab === 'ORDERS' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition ${activeTab === 'ORDERS' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                             >
                                 <Package className="w-4 h-4" /> Orders
                             </button>
                             <button 
                                 onClick={() => setActiveTab('ADDRESS')}
-                                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition ${activeTab === 'ADDRESS' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition ${activeTab === 'ADDRESS' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                             >
                                 <MapPin className="w-4 h-4" /> Addresses
                             </button>
@@ -211,7 +224,7 @@ export const UserProfile = () => {
                             )}
                             <button 
                                 onClick={logout}
-                                className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition"
+                                className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition mt-4 border-t border-gray-100 pt-4"
                             >
                                 <LogOut className="w-4 h-4" /> Sign Out
                             </button>
@@ -222,7 +235,7 @@ export const UserProfile = () => {
                 {/* Content */}
                 <div className="md:w-3/4">
                     {activeTab === 'ORDERS' && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 animate-fade-in">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Order History</h3>
                             {user.orders.length === 0 ? (
                                 <div className="text-center py-10 bg-white rounded-xl border border-gray-100">
@@ -230,8 +243,8 @@ export const UserProfile = () => {
                                     <p className="text-gray-500">No orders found</p>
                                 </div>
                             ) : (
-                                user.orders.map(order => (
-                                    <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                user.orders.map((order, idx) => (
+                                    <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                         <div className="flex justify-between items-start border-b border-gray-100 pb-4 mb-4">
                                             <div>
                                                 <p className="font-bold text-gray-800">{order.id}</p>
@@ -244,7 +257,7 @@ export const UserProfile = () => {
                                                 }`}>
                                                     {order.status}
                                                 </span>
-                                                <p className="font-bold text-emerald-600 mt-1">${order.total.toFixed(2)}</p>
+                                                <p className="font-bold text-blue-600 mt-1">${order.total.toFixed(2)}</p>
                                             </div>
                                         </div>
                                         <div className="space-y-2">
@@ -262,33 +275,33 @@ export const UserProfile = () => {
                     )}
 
                     {activeTab === 'ADDRESS' && (
-                        <div>
+                        <div className="animate-fade-in">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Saved Addresses</h3>
                             <div className="grid gap-4">
                                 {user.savedAddresses.map((addr, idx) => (
-                                    <div key={idx} className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                                    <div key={idx} className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between shadow-sm animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                         <div className="flex items-center gap-3">
                                             <MapPin className="w-5 h-5 text-gray-400" />
                                             <span className="text-gray-700">{addr}</span>
                                         </div>
-                                        <button onClick={() => deleteAddress(addr)} className="text-gray-400 hover:text-red-500 transition">
+                                        <button onClick={() => deleteAddress(addr)} className="text-gray-400 hover:text-red-500 transition p-2 rounded hover:bg-red-50">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ))}
                             </div>
                             
-                            <form onSubmit={handleAddAddress} className="mt-6 bg-white p-6 rounded-xl border border-gray-100">
+                            <form onSubmit={handleAddAddress} className="mt-6 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Add New Address</label>
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
-                                        className="flex-1 border p-2 rounded-lg" 
+                                        className="flex-1 border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
                                         placeholder="123 Main St, City, State"
                                         value={newAddress}
                                         onChange={(e) => setNewAddress(e.target.value)}
                                     />
-                                    <button type="submit" className="bg-gray-800 text-white px-4 rounded-lg hover:bg-gray-900 flex items-center gap-2">
+                                    <button type="submit" className="bg-gray-800 text-white px-4 rounded-lg hover:bg-gray-900 flex items-center gap-2 transition">
                                         <Plus className="w-4 h-4" /> Add
                                     </button>
                                 </div>

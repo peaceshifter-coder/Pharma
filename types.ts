@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   name: string;
@@ -13,6 +14,7 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  imageUrl?: string;
 }
 
 export interface Store {
@@ -26,6 +28,7 @@ export interface Store {
 
 export interface CartItem extends Product {
   quantity: number;
+  prescriptionProof?: string;
 }
 
 export interface Order {
@@ -56,11 +59,35 @@ export interface PaymentMethod {
   description?: string;
 }
 
+export interface HeroConfig {
+    title: string;
+    subtitle: string;
+    imageUrl: string;
+    ctaText: string;
+}
+
+export interface ContactConfig {
+    address: string;
+    phone: string;
+    email: string;
+}
+
 export interface AppSettings {
   logoUrl: string;
   siteName: string;
   primaryColor: string;
   paymentMethods: PaymentMethod[];
+  hero: HeroConfig;
+  contact: ContactConfig;
+  footerAboutText: string;
+}
+
+export interface Page {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  lastUpdated: string;
 }
 
 export interface Toast {
@@ -69,5 +96,5 @@ export interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-export type ViewState = 'HOME' | 'SHOP' | 'PRODUCT' | 'CART' | 'CHECKOUT' | 'ADMIN' | 'LOGIN' | 'REGISTER' | 'PROFILE';
-export type AdminViewState = 'DASHBOARD' | 'PRODUCTS' | 'CATEGORIES' | 'STORES' | 'SETTINGS' | 'ORDERS';
+export type ViewState = 'HOME' | 'SHOP' | 'PRODUCT' | 'CART' | 'CHECKOUT' | 'ADMIN' | 'LOGIN' | 'REGISTER' | 'PROFILE' | 'PAGE';
+export type AdminViewState = 'DASHBOARD' | 'PRODUCTS' | 'CATEGORIES' | 'STORES' | 'SETTINGS' | 'ORDERS' | 'PAGES';
