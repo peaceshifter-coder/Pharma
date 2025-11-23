@@ -95,7 +95,7 @@ export const INITIAL_STORES: Store[] = [
     phone: '(555) 456-7890',
     lat: 41.8781, // Chicago approx
     lng: -87.6298,
-  }
+  },
   {
     id: 's4',
     name: 'Sameer store',
