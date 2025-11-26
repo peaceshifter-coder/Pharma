@@ -98,5 +98,5 @@ export interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-export type ViewState = 'HOME' | 'SHOP' | 'PRODUCT' | 'CART' | 'CHECKOUT' | 'ADMIN' | 'LOGIN' | 'REGISTER' | 'PROFILE' | 'PAGE';
+export type ViewState = 'HOME' | 'SHOP' | 'PRODUCT' | 'CART' | 'CHECKOUT' | 'ADMIN' | 'LOGIN' | 'REGISTER' | 'PROFILE' | 'PAGE' | 'TRACK_ORDER';
 export type AdminViewState = 'DASHBOARD' | 'PRODUCTS' | 'CATEGORIES' | 'STORES' | 'SETTINGS' | 'ORDERS' | 'PAGES';

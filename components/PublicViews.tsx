@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { Product } from '../types';
-import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X } from 'lucide-react';
+import { Product, Order } from '../types';
+import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X, Search, Package } from 'lucide-react';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     const { addToCart, viewProduct, formatPrice } = useApp();
@@ -670,6 +670,121 @@ export const PageView = () => {
                     {selectedPage.content}
                 </div>
             </div>
+        </div>
+    );
+};
+
+export const TrackOrder = () => {
+    const { allOrders, navigate, formatPrice } = useApp();
+    const [searchId, setSearchId] = useState('');
+    const [order, setOrder] = useState<Order | null>(null);
+    const [searched, setSearched] = useState(false);
+
+    const handleTrack = (e: React.FormEvent) => {
+        e.preventDefault();
+        const found = allOrders.find(o => o.id.toLowerCase() === searchId.toLowerCase());
+        setOrder(found || null);
+        setSearched(true);
+    };
+
+    const getStatusStep = (status: string) => {
+        if (status === 'Processing') return 1;
+        if (status === 'Shipped') return 2;
+        if (status === 'Delivered') return 3;
+        return 0;
+    };
+
+    const activeStep = order ? getStatusStep(order.status) : 0;
+
+    return (
+        <div className="max-w-3xl mx-auto px-4 py-8 animate-fade-in-up">
+            <button onClick={() => navigate('HOME')} className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition group">
+                <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Back to Home
+            </button>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center mb-8">
+                <div className="inline-block p-4 bg-blue-50 rounded-full mb-4">
+                    <Package className="w-8 h-8 text-blue-600" />
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Track Your Order</h1>
+                <p className="text-gray-500 mb-8">Enter your order ID to see the current status</p>
+                
+                <form onSubmit={handleTrack} className="max-w-md mx-auto relative flex items-center">
+                    <Search className="absolute left-3 text-gray-400 w-5 h-5" />
+                    <input 
+                        type="text" 
+                        placeholder="e.g. ORD-1234" 
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                        value={searchId}
+                        onChange={e => setSearchId(e.target.value)}
+                    />
+                    <button type="submit" className="absolute right-2 bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 transition font-medium">
+                        Track
+                    </button>
+                </form>
+            </div>
+
+            {searched && !order && (
+                <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-center animate-fade-in">
+                    <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+                    <p className="font-bold">Order not found</p>
+                    <p className="text-sm">Please check the Order ID and try again.</p>
+                </div>
+            )}
+
+            {order && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-scale-in">
+                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center flex-wrap gap-4">
+                        <div>
+                            <p className="text-sm text-gray-500">Order ID</p>
+                            <p className="font-bold text-gray-900 text-lg">{order.id}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500">Order Date</p>
+                            <p className="font-bold text-gray-900">{order.date}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500">Total Amount</p>
+                            <p className="font-bold text-blue-600 text-lg">{formatPrice(order.total)}</p>
+                        </div>
+                    </div>
+
+                    <div className="p-8">
+                        {/* Timeline */}
+                        <div className="relative flex justify-between mb-12 max-w-lg mx-auto">
+                            <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 -translate-y-1/2 rounded-full"></div>
+                            <div className={`absolute top-1/2 left-0 h-1 bg-green-500 -z-10 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${(activeStep - 1) * 50}%` }}></div>
+
+                            {[
+                                { step: 1, label: 'Processing', icon: FileText },
+                                { step: 2, label: 'Shipped', icon: Truck },
+                                { step: 3, label: 'Delivered', icon: CheckCircle }
+                            ].map((s) => (
+                                <div key={s.step} className="flex flex-col items-center gap-2 bg-white px-2">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${activeStep >= s.step ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-200' : 'bg-white border-gray-300 text-gray-300'}`}>
+                                        <s.icon className="w-5 h-5" />
+                                    </div>
+                                    <span className={`text-xs font-bold ${activeStep >= s.step ? 'text-green-600' : 'text-gray-400'}`}>{s.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-gray-800 border-b pb-2">Order Items</h3>
+                            {order.items.map((item, idx) => (
+                                <div key={idx} className="flex items-center gap-4 py-2">
+                                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-lg object-cover bg-gray-50" />
+                                    <div className="flex-1">
+                                        <p className="font-medium text-gray-900">{item.name}</p>
+                                        <p className="text-sm text-gray-500">{item.quantity} x {formatPrice(item.price)}</p>
+                                    </div>
+                                    <p className="font-bold text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

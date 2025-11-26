@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AdminDashboard, AdminProducts, AdminStores, AdminSettings, AdminCategories, AdminOrders, AdminPages } from './components/AdminViews';
-import { Home, Shop, Checkout, ProductDetail, PageView } from './components/PublicViews';
+import { Home, Shop, Checkout, ProductDetail, PageView, TrackOrder } from './components/PublicViews';
 import { Login, Register, UserProfile } from './components/AuthViews';
 import { findNearestStore } from './services/geo.ts';
 import { ShoppingCart, MapPin, Menu, X, Settings, LayoutDashboard, Package, Store as StoreIcon, Layers, User as UserIcon, ShieldCheck, ChevronDown, ClipboardList, Search, Phone, Mail, CheckCircle, AlertCircle, Info, Loader2, FileText, Home as HomeIcon, LayoutGrid } from 'lucide-react';
@@ -293,7 +293,7 @@ const Footer = () => {
                             <li><button onClick={() => navigate('HOME')} className="text-blue-200/80 hover:text-white transition">Home</button></li>
                             <li><button onClick={() => navigate('SHOP')} className="text-blue-200/80 hover:text-white transition">Shop All</button></li>
                             <li><button onClick={() => navigate('LOGIN')} className="text-blue-200/80 hover:text-white transition">My Account</button></li>
-                            <li><button onClick={() => navigate('CHECKOUT')} className="text-blue-200/80 hover:text-white transition">Track Order</button></li>
+                            <li><button onClick={() => navigate('TRACK_ORDER')} className="text-blue-200/80 hover:text-white transition">Track Order</button></li>
                         </ul>
                     </div>
 
@@ -443,6 +443,7 @@ const MainContent = () => {
                 {view === 'SHOP' && <Shop />}
                 {view === 'PRODUCT' && <ProductDetail />}
                 {view === 'PAGE' && <PageView />}
+                {view === 'TRACK_ORDER' && <TrackOrder />}
                 {view === 'CHECKOUT' && <Checkout />}
                 {view === 'LOGIN' && <Login />}
                 {view === 'REGISTER' && <Register />}
