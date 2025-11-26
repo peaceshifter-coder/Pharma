@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product, Order } from '../types';
-import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X, Search, Package } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X, Search, Package, LogIn } from 'lucide-react';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     const { addToCart, viewProduct, formatPrice } = useApp();
@@ -616,17 +616,26 @@ export const Checkout = () => {
                         </div>
                         
                         {step === 'CART' ? (
-                            <button 
-                                onClick={() => setStep('DETAILS')} 
-                                disabled={pendingRxItems.length > 0}
-                                className={`w-full py-3 rounded-lg font-bold transition transform active:scale-95 ${
-                                    pendingRxItems.length > 0 
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105'
-                                }`}
-                            >
-                                {pendingRxItems.length > 0 ? 'Upload Prescriptions to Proceed' : 'Proceed to Checkout'}
-                            </button>
+                            !user ? (
+                                <button 
+                                    onClick={() => navigate('LOGIN')}
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition transform hover:scale-105 flex items-center justify-center gap-2"
+                                >
+                                    <LogIn className="w-5 h-5" /> Login to Checkout
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => setStep('DETAILS')} 
+                                    disabled={pendingRxItems.length > 0}
+                                    className={`w-full py-3 rounded-lg font-bold transition transform active:scale-95 ${
+                                        pendingRxItems.length > 0 
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105'
+                                    }`}
+                                >
+                                    {pendingRxItems.length > 0 ? 'Upload Prescriptions to Proceed' : 'Proceed to Checkout'}
+                                </button>
+                            )
                         ) : (
                             <>
                                 <button 
