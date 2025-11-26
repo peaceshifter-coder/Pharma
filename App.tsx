@@ -5,13 +5,13 @@ import { AdminDashboard, AdminProducts, AdminStores, AdminSettings, AdminCategor
 import { Home, Shop, Checkout, ProductDetail, PageView } from './components/PublicViews';
 import { Login, Register, UserProfile } from './components/AuthViews';
 import { findNearestStore } from './services/geo.ts';
-import { ShoppingCart, MapPin, Menu, X, Settings, LayoutDashboard, Package, Store as StoreIcon, Layers, User as UserIcon, ShieldCheck, ChevronDown, ClipboardList, Search, Phone, Mail, CheckCircle, AlertCircle, Info, Loader2, FileText } from 'lucide-react';
+import { ShoppingCart, MapPin, Menu, X, Settings, LayoutDashboard, Package, Store as StoreIcon, Layers, User as UserIcon, ShieldCheck, ChevronDown, ClipboardList, Search, Phone, Mail, CheckCircle, AlertCircle, Info, Loader2, FileText, Home as HomeIcon, LayoutGrid } from 'lucide-react';
 
 // --- Toast Container ---
 const ToastContainer = () => {
     const { toasts, removeToast } = useApp();
     return (
-        <div className="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
+        <div className="fixed bottom-20 md:bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none">
             {toasts.map(t => (
                 <div 
                     key={t.id} 
@@ -31,6 +31,54 @@ const ToastContainer = () => {
         </div>
     );
 }
+
+// --- Mobile Bottom Navigation ---
+const MobileBottomNav = () => {
+    const { view, navigate, cart, user } = useApp();
+    
+    return (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-4 md:pb-0">
+            <button 
+                onClick={() => navigate('HOME')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${view === 'HOME' ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}
+            >
+                <HomeIcon className="w-6 h-6" />
+                <span className="text-[10px] font-medium mt-1">Home</span>
+            </button>
+            
+            <button 
+                onClick={() => navigate('SHOP')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${view === 'SHOP' || view === 'PRODUCT' ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}
+            >
+                <LayoutGrid className="w-6 h-6" />
+                <span className="text-[10px] font-medium mt-1">Shop</span>
+            </button>
+            
+            <button 
+                onClick={() => navigate('CHECKOUT')}
+                className={`relative flex flex-col items-center justify-center w-full h-full transition-colors ${view === 'CHECKOUT' ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}
+            >
+                <div className="relative">
+                    <ShoppingCart className="w-6 h-6" />
+                    {cart.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] flex items-center justify-center border-2 border-white">
+                            {cart.length}
+                        </span>
+                    )}
+                </div>
+                <span className="text-[10px] font-medium mt-1">Cart</span>
+            </button>
+            
+            <button 
+                onClick={() => navigate(user ? 'PROFILE' : 'LOGIN')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${view === 'PROFILE' || view === 'LOGIN' || view === 'REGISTER' ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}
+            >
+                <UserIcon className="w-6 h-6" />
+                <span className="text-[10px] font-medium mt-1">{user ? 'Profile' : 'Account'}</span>
+            </button>
+        </div>
+    );
+};
 
 // --- Navigation Component ---
 const Navbar = () => {
@@ -147,7 +195,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center md:hidden gap-4">
-             {/* Mobile Cart Icon */}
+             {/* Mobile Cart Icon - Restored for top visibility */}
              <button onClick={() => navigate('CHECKOUT')} className="relative p-2 text-gray-600">
                 <ShoppingCart className="w-6 h-6" />
                 {cart.length > 0 && (
@@ -163,7 +211,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu (Overlay) */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full z-50 max-h-[80vh] overflow-y-auto">
           <div className="px-4 pt-4 pb-4 space-y-3">
@@ -186,8 +234,6 @@ const Navbar = () => {
                 <MapPin className="w-4 h-4 mr-2" />
                 <span className="font-medium">{nearest ? `${nearest}` : "Locating..."}</span>
             </div>
-
-            <button onClick={() => { navigate('HOME'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">Home</button>
             
             {/* Mobile Categories List */}
             <div className="px-3 py-2">
@@ -203,15 +249,11 @@ const Navbar = () => {
                 ))}
             </div>
 
-            <button onClick={() => { navigate('SHOP'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">Shop All</button>
             {user?.role === 'admin' && (
                  <button onClick={() => { navigate('ADMIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4" /> Admin
+                    <ShieldCheck className="w-4 h-4" /> Admin Panel
                  </button>
             )}
-            <button onClick={() => { navigate(user ? 'PROFILE' : 'LOGIN'); setMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 w-full text-left">
-                {user ? 'My Profile' : 'Sign In'}
-            </button>
           </div>
         </div>
       )}
@@ -380,6 +422,7 @@ const MainContent = () => {
                      </div>
                 </div>
                 <Footer />
+                <MobileBottomNav />
                 <ToastContainer />
             </div>
         );
@@ -393,7 +436,7 @@ const MainContent = () => {
     );
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0 relative">
             <Navbar />
             <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
                 {view === 'HOME' && <Home />}
@@ -406,6 +449,7 @@ const MainContent = () => {
                 {view === 'PROFILE' && <UserProfile />}
             </main>
             <Footer />
+            <MobileBottomNav />
             <ToastContainer />
         </div>
     );

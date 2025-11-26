@@ -126,7 +126,9 @@ export const INITIAL_SETTINGS: AppSettings = {
       phone: '(555) 123-4567',
       email: 'support@pharmacareplus.com'
   },
-  footerAboutText: 'Your trusted partner in health and wellness. We provide high-quality medicines, health products, and professional care right to your doorstep.'
+  footerAboutText: 'Your trusted partner in health and wellness. We provide high-quality medicines, health products, and professional care right to your doorstep.',
+  currencySymbol: '$',
+  taxRate: 0.08
 };
 
 export const INITIAL_ORDERS: Order[] = [

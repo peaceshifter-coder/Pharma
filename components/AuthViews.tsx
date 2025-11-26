@@ -175,7 +175,7 @@ export const Register = () => {
 };
 
 export const UserProfile = () => {
-    const { user, logout, addAddress, deleteAddress } = useApp();
+    const { user, logout, addAddress, deleteAddress, formatPrice } = useApp();
     const [activeTab, setActiveTab] = useState<'ORDERS' | 'ADDRESS'>('ORDERS');
     const [newAddress, setNewAddress] = useState('');
 
@@ -257,14 +257,14 @@ export const UserProfile = () => {
                                                 }`}>
                                                     {order.status}
                                                 </span>
-                                                <p className="font-bold text-blue-600 mt-1">${order.total.toFixed(2)}</p>
+                                                <p className="font-bold text-blue-600 mt-1">{formatPrice(order.total)}</p>
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             {order.items.map((item, idx) => (
                                                 <div key={idx} className="flex justify-between text-sm">
                                                     <span className="text-gray-600">{item.quantity}x {item.name}</span>
-                                                    <span className="text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                                                    <span className="text-gray-900">{formatPrice(item.price * item.quantity)}</span>
                                                 </div>
                                             ))}
                                         </div>

@@ -80,6 +80,8 @@ export interface AppSettings {
   hero: HeroConfig;
   contact: ContactConfig;
   footerAboutText: string;
+  currencySymbol: string;
+  taxRate: number;
 }
 
 export interface Page {

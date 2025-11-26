@@ -5,7 +5,7 @@ import { Product } from '../types';
 import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X } from 'lucide-react';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
-    const { addToCart, viewProduct } = useApp();
+    const { addToCart, viewProduct, formatPrice } = useApp();
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full group hover-lift overflow-hidden">
             <div 
@@ -29,7 +29,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                 </h3>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-grow">{product.description}</p>
                 <div className="flex items-center justify-between mt-auto">
-                    <span className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-gray-900">{formatPrice(product.price)}</span>
                     <button 
                         onClick={() => addToCart(product)}
                         className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-95"
@@ -44,7 +44,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 };
 
 export const ProductDetail = () => {
-    const { selectedProduct, addToCart, navigate } = useApp();
+    const { selectedProduct, addToCart, navigate, formatPrice } = useApp();
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<'DESC' | 'INFO'>('DESC');
 
@@ -93,7 +93,7 @@ export const ProductDetail = () => {
                                 </span>
                             </div>
 
-                            <div className="text-3xl font-bold text-gray-900 mb-6">${selectedProduct.price.toFixed(2)}</div>
+                            <div className="text-3xl font-bold text-gray-900 mb-6">{formatPrice(selectedProduct.price)}</div>
 
                             <div className="prose text-gray-600 mb-8 leading-relaxed">
                                 {selectedProduct.description}
@@ -329,7 +329,7 @@ export const Shop = () => {
 };
 
 export const Checkout = () => {
-    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings, attachPrescription } = useApp();
+    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings, attachPrescription, formatPrice } = useApp();
     const [step, setStep] = useState<'CART' | 'DETAILS' | 'SUCCESS'>('CART');
     const [loading, setLoading] = useState(false);
     const [address, setAddress] = useState(user?.savedAddresses[0] || '');
@@ -338,7 +338,10 @@ export const Checkout = () => {
     const [expiry, setExpiry] = useState('');
     const [cvc, setCvc] = useState('');
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const taxRate = settings.taxRate || 0;
+    const taxAmount = subtotal * taxRate;
+    const total = subtotal + taxAmount;
 
     // Identify items needing Rx without proof
     const pendingRxItems = useMemo(() => {
@@ -399,6 +402,9 @@ export const Checkout = () => {
 
     return (
         <div className="max-w-4xl mx-auto px-4 md:px-0 animate-fade-in-up">
+            <button onClick={() => navigate('SHOP')} className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition group">
+                <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Back to Shop
+            </button>
             <h2 className="text-3xl font-bold mb-8 text-gray-800">{step === 'CART' ? 'Shopping Cart' : 'Checkout Details'}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -434,7 +440,7 @@ export const Checkout = () => {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-bold text-lg">{formatPrice(item.price * item.quantity)}</p>
                                         </div>
                                     </div>
 
@@ -593,11 +599,11 @@ export const Checkout = () => {
                         <div className="space-y-2 mb-6">
                             <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
-                                <span>${total.toFixed(2)}</span>
+                                <span>{formatPrice(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
-                                <span>Tax (8%)</span>
-                                <span>${(total * 0.08).toFixed(2)}</span>
+                                <span>Tax ({(taxRate * 100).toFixed(0)}%)</span>
+                                <span>{formatPrice(taxAmount)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Shipping</span>
@@ -605,7 +611,7 @@ export const Checkout = () => {
                             </div>
                             <div className="border-t pt-2 mt-2 flex justify-between font-bold text-lg text-gray-900">
                                 <span>Total</span>
-                                <span>${(total * 1.08).toFixed(2)}</span>
+                                <span>{formatPrice(total)}</span>
                             </div>
                         </div>
                         
@@ -630,7 +636,7 @@ export const Checkout = () => {
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    ) : `Pay $${(total * 1.08).toFixed(2)}`}
+                                    ) : `Pay ${formatPrice(total)}`}
                                 </button>
                                 <button onClick={() => setStep('CART')} className="w-full text-gray-500 mt-2 py-2 text-sm hover:text-gray-700">
                                     Back to Cart

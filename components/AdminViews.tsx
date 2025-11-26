@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product, Store, Category, Order, Page } from '../types';
@@ -7,8 +6,9 @@ import {
   Trash2, Edit, Plus, MapPin, Package, 
   LayoutGrid, Settings, Activity, Sparkles, Save,
   ShoppingBag, ChevronDown, ChevronUp, CreditCard, Wallet, Truck, FileText,
-  Image as ImageIcon, Type, Link as LinkIcon, Phone, Mail, Globe, File
+  Image as ImageIcon, Type, Link as LinkIcon, Phone, Mail, Globe, File, DollarSign, Database, Cloud, Wifi
 } from 'lucide-react';
+import { FirebaseConfig } from '../services/api';
 
 // --- Generic Table Component ---
 const Table: React.FC<{ headers: string[], children: React.ReactNode }> = ({ headers, children }) => (
@@ -27,7 +27,7 @@ const Table: React.FC<{ headers: string[], children: React.ReactNode }> = ({ hea
 
 // --- Products View ---
 export const AdminProducts = () => {
-  const { products, categories, deleteProduct, addProduct, updateProduct } = useApp();
+  const { products, categories, deleteProduct, addProduct, updateProduct, formatPrice } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isGenerating, setIsGenerating] = useState(false);
@@ -90,7 +90,7 @@ export const AdminProducts = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+                <label className="block text-sm font-medium text-gray-700">Price</label>
                 <input type="number" step="0.01" required className="w-full p-2 border border-gray-300 rounded mt-1 focus:ring-2 focus:ring-blue-500 outline-none" value={formData.price || ''} onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} />
             </div>
             <div>
@@ -136,7 +136,7 @@ export const AdminProducts = () => {
                 {p.name}
             </td>
             <td className="px-6 py-4">{p.category}</td>
-            <td className="px-6 py-4">${p.price.toFixed(2)}</td>
+            <td className="px-6 py-4">{formatPrice(p.price)}</td>
             <td className="px-6 py-4">
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.stock > 10 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {p.stock} in stock
@@ -472,7 +472,7 @@ export const AdminPages = () => {
 
 // --- Orders View ---
 export const AdminOrders = () => {
-    const { allOrders, updateOrderStatus } = useApp();
+    const { allOrders, updateOrderStatus, formatPrice } = useApp();
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
     const toggleExpand = (id: string) => {
@@ -492,7 +492,7 @@ export const AdminOrders = () => {
                             </td>
                             <td className="px-6 py-4">{order.customerName}</td>
                             <td className="px-6 py-4">{order.date}</td>
-                            <td className="px-6 py-4 font-bold">${order.total.toFixed(2)}</td>
+                            <td className="px-6 py-4 font-bold">{formatPrice(order.total)}</td>
                             <td className="px-6 py-4">
                                 <select 
                                     onClick={(e) => e.stopPropagation()}
@@ -536,7 +536,7 @@ export const AdminOrders = () => {
                                                             </div>
                                                         )}
                                                     </span>
-                                                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                                    <span>{formatPrice(item.price * item.quantity)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -553,7 +553,7 @@ export const AdminOrders = () => {
 
 // --- Dashboard & Settings ---
 export const AdminDashboard = () => {
-    const { products, stores, allOrders } = useApp();
+    const { products, stores, allOrders, formatPrice, dbConfig } = useApp();
     const totalStock = products.reduce((acc, p) => acc + p.stock, 0);
     const lowStock = products.filter(p => p.stock < 10).length;
     const recentOrders = allOrders.length;
@@ -572,45 +572,78 @@ export const AdminDashboard = () => {
     );
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Total Revenue" value={`$${revenue.toFixed(0)}`} icon={ShoppingBag} color="bg-blue-500 text-blue-500" />
-            <StatCard title="Total Orders" value={recentOrders} icon={Package} color="bg-purple-500 text-purple-500" />
-            <StatCard title="Low Stock Alert" value={lowStock} icon={Activity} color="bg-red-500 text-red-500" />
-            <StatCard title="Active Stores" value={stores.length} icon={MapPin} color="bg-blue-500 text-blue-500" />
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <StatCard title="Total Revenue" value={formatPrice(revenue)} icon={ShoppingBag} color="bg-blue-500 text-blue-500" />
+                <StatCard title="Total Orders" value={recentOrders} icon={Package} color="bg-purple-500 text-purple-500" />
+                <StatCard title="Low Stock Alert" value={lowStock} icon={Activity} color="bg-red-500 text-red-500" />
+                <StatCard title="Active Stores" value={stores.length} icon={MapPin} color="bg-blue-500 text-blue-500" />
+            </div>
+            <div className="flex items-center gap-2 p-4 rounded-lg border border-blue-100 bg-blue-50 text-blue-800">
+                <Database className="w-5 h-5" />
+                <span className="font-semibold">Database Status:</span>
+                <span className="flex items-center gap-1">
+                    {dbConfig ? (
+                        <>
+                            <Cloud className="w-4 h-4 text-green-600" />
+                            <span className="text-green-700 font-bold">Cloud Synced (Firebase)</span>
+                        </>
+                    ) : (
+                        <>
+                            <Wifi className="w-4 h-4 text-gray-500" />
+                            <span className="text-gray-600">Local Storage Mode</span>
+                        </>
+                    )}
+                </span>
+            </div>
         </div>
     );
 };
 
 export const AdminSettings = () => {
-    const { settings, updateSettings, togglePaymentMethod } = useApp();
+    const { settings, updateSettings, togglePaymentMethod, dbConfig, saveDbConfig, removeDbConfig } = useApp();
     const [localSettings, setLocalSettings] = useState(settings);
-    const [activeTab, setActiveTab] = useState<'GENERAL' | 'HERO' | 'CONTACT' | 'PAYMENT'>('GENERAL');
+    const [activeTab, setActiveTab] = useState<'GENERAL' | 'HERO' | 'CONTACT' | 'PAYMENT' | 'FINANCE' | 'DATABASE'>('GENERAL');
+
+    // DB Form State
+    const [dbForm, setDbForm] = useState<Partial<FirebaseConfig>>(dbConfig || {
+        apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: ""
+    });
 
     const handleSave = () => {
         updateSettings(localSettings);
+    };
+
+    const handleDbSave = (e: React.FormEvent) => {
+        e.preventDefault();
+        saveDbConfig(dbForm as FirebaseConfig);
     };
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-800">Site Configuration</h2>
-                <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg">
-                    <Save className="w-4 h-4" /> Save Changes
-                </button>
+                {activeTab !== 'DATABASE' && (
+                    <button onClick={handleSave} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg">
+                        <Save className="w-4 h-4" /> Save Changes
+                    </button>
+                )}
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex space-x-2 border-b border-gray-200">
+            <div className="flex space-x-2 border-b border-gray-200 overflow-x-auto">
                 {[
                     { id: 'GENERAL', label: 'General', icon: Settings },
+                    { id: 'FINANCE', label: 'Finance', icon: DollarSign },
                     { id: 'HERO', label: 'Home Page', icon: LayoutGrid },
                     { id: 'CONTACT', label: 'Contact & Footer', icon: Globe },
                     { id: 'PAYMENT', label: 'Payments', icon: CreditCard },
+                    { id: 'DATABASE', label: 'Database', icon: Database },
                 ].map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 ${
+                        className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 whitespace-nowrap ${
                             activeTab === tab.id 
                                 ? 'border-blue-600 text-blue-700 bg-blue-50' 
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -647,6 +680,51 @@ export const AdminSettings = () => {
                                     <img src={localSettings.logoUrl} alt="Preview" className="w-8 h-8 object-contain" />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Finance Settings */}
+            {activeTab === 'FINANCE' && (
+                <div className="bg-white p-6 rounded-b-lg rounded-r-lg shadow-sm border border-t-0 border-gray-200 animate-fade-in">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><DollarSign className="w-5 h-5 text-gray-400"/> Currency & Taxes</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700">Currency Symbol</label>
+                            <div className="relative mt-1">
+                                <select 
+                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white" 
+                                    value={localSettings.currencySymbol || '$'} 
+                                    onChange={e => setLocalSettings({...localSettings, currencySymbol: e.target.value})} 
+                                >
+                                    <option value="$">Dollar ($)</option>
+                                    <option value="€">Euro (€)</option>
+                                    <option value="£">Pound (£)</option>
+                                    <option value="₹">Rupee (₹)</option>
+                                    <option value="¥">Yen (¥)</option>
+                                    <option value="A$">Australian Dollar (A$)</option>
+                                    <option value="C$">Canadian Dollar (C$)</option>
+                                </select>
+                                <ChevronDown className="absolute right-2 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Select the symbol to display next to prices.</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Tax Rate (%)</label>
+                            <div className="relative mt-1">
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none" 
+                                    value={(localSettings.taxRate * 100).toFixed(2)} 
+                                    onChange={e => setLocalSettings({...localSettings, taxRate: parseFloat(e.target.value) / 100})} 
+                                />
+                                <span className="absolute right-3 top-2 text-gray-500">%</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Percentage added to subtotal at checkout.</p>
                         </div>
                     </div>
                 </div>
@@ -789,6 +867,63 @@ export const AdminSettings = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {/* Database Settings */}
+            {activeTab === 'DATABASE' && (
+                <div className="bg-white p-6 rounded-b-lg rounded-r-lg shadow-sm border border-t-0 border-gray-200 animate-fade-in">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Database className="w-5 h-5 text-gray-400"/> Database Connection</h3>
+                        {dbConfig ? (
+                             <button onClick={removeDbConfig} className="text-red-600 text-sm hover:underline">Disconnect</button>
+                        ) : null}
+                    </div>
+                    
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                        <p className="text-sm text-blue-800 mb-2 font-semibold">Cross-Device Sync</p>
+                        <p className="text-sm text-blue-700">
+                            By default, PharmaCare uses local storage. To sync data across all devices, configure a Firebase project.
+                            <br />
+                            1. Create a project at <a href="https://console.firebase.google.com" target="_blank" className="underline">console.firebase.google.com</a><br/>
+                            2. Create a Web App and copy the config object.<br/>
+                            3. Create a Firestore Database in <strong>Test Mode</strong>.<br/>
+                            4. Paste the config keys below.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleDbSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">API Key</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.apiKey} onChange={e => setDbForm({...dbForm, apiKey: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Auth Domain</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.authDomain} onChange={e => setDbForm({...dbForm, authDomain: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Project ID</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.projectId} onChange={e => setDbForm({...dbForm, projectId: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Storage Bucket</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.storageBucket} onChange={e => setDbForm({...dbForm, storageBucket: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Messaging Sender ID</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.messagingSenderId} onChange={e => setDbForm({...dbForm, messagingSenderId: e.target.value})} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">App ID</label>
+                            <input required type="text" className="w-full p-2 border rounded mt-1 text-sm font-mono" value={dbForm.appId} onChange={e => setDbForm({...dbForm, appId: e.target.value})} />
+                        </div>
+                        
+                        <div className="md:col-span-2 pt-4">
+                            <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-md">
+                                {dbConfig ? 'Update Configuration' : 'Connect & Sync'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
         </div>

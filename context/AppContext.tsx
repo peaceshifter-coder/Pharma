@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, Category, Store, CartItem, AppSettings, ViewState, AdminViewState, User, Order, Toast, Page } from '../types';
 import { INITIAL_SETTINGS } from '../constants';
-import { db } from '../services/api';
+import { db, saveFirebaseConfig, clearFirebaseConfig, getStoredFirebaseConfig, FirebaseConfig } from '../services/api';
 
 interface AppContextType {
   appLoading: boolean;
@@ -23,6 +22,7 @@ interface AppContextType {
   toasts: Toast[];
   pages: Page[];
   selectedPage: Page | null;
+  dbConfig: FirebaseConfig | null;
   
   // Actions
   addProduct: (product: Product) => void;
@@ -63,9 +63,16 @@ interface AppContextType {
   updatePage: (page: Page) => void;
   deletePage: (id: string) => void;
 
+  // DB Config Actions
+  saveDbConfig: (config: FirebaseConfig) => void;
+  removeDbConfig: () => void;
+
   // Toast Actions
   showToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
+  
+  // Helper
+  formatPrice: (price: number) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -81,6 +88,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [user, setUser] = useState<User | null>(db.auth.getCurrentUser());
+  const [dbConfig, setDbConfig] = useState<FirebaseConfig | null>(getStoredFirebaseConfig());
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [view, setView] = useState<ViewState>('HOME');
@@ -93,7 +101,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // Initial Data Load (Simulate connecting to DB)
+  // Initial Data Load
   useEffect(() => {
     const initData = async () => {
         setAppLoading(true);
@@ -109,7 +117,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setProducts(p);
             setCategories(c);
             setStores(s);
-            setSettings(st);
+            setSettings({ ...INITIAL_SETTINGS, ...st });
             setAllOrders(o);
             setPages(pg);
         } catch (error) {
@@ -132,12 +140,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
+  
+  const formatPrice = (price: number) => {
+      return `${settings.currencySymbol || '$'}${price.toFixed(2)}`;
+  };
 
   // --- Actions ---
 
   // Products
   const addProduct = async (p: Product) => {
-      // Optimistic update
       setProducts(prev => [...prev, p]);
       showToast('Product adding...');
       await db.products.save(p);
@@ -281,7 +292,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           role: 'customer'
       };
       setUser(newUser);
-      db.auth.updateUser(newUser); // Simulate saving new user
+      db.auth.updateUser(newUser);
       showToast('Account created successfully');
   };
 
@@ -307,7 +318,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           paymentMethod
       };
 
-      // Optimistic update
       if (user) {
           const updatedUser = { ...user, orders: [newOrder, ...user.orders] };
           setUser(updatedUser);
@@ -362,11 +372,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       showToast('Page deleted', 'info');
   };
 
+  // Database Configuration
+  const saveDbConfig = (config: FirebaseConfig) => {
+      saveFirebaseConfig(config);
+      // Force refresh is handled inside saveFirebaseConfig
+  };
+
+  const removeDbConfig = () => {
+      clearFirebaseConfig();
+  };
+
   return (
     <AppContext.Provider value={{
       appLoading,
       products, categories, stores, cart, settings, view, adminView, userLocation, nearestStore, user,
       selectedCategory, setSelectedCategory, allOrders, searchQuery, toasts, selectedProduct, pages, selectedPage,
+      dbConfig,
       addProduct, updateProduct, deleteProduct,
       addCategory, updateCategory, deleteCategory,
       addStore, updateStore, deleteStore,
@@ -377,7 +398,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       },
       login, register, logout, placeOrder, addAddress, deleteAddress, updateOrderStatus,
       viewPage, addPage, updatePage, deletePage,
-      setSearchQuery, showToast, removeToast
+      setSearchQuery, showToast, removeToast, formatPrice,
+      saveDbConfig, removeDbConfig
     }}>
       {children}
     </AppContext.Provider>

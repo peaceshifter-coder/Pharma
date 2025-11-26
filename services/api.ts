@@ -1,191 +1,304 @@
-
 import { Product, Category, Store, AppSettings, User, Order, Page } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_STORES, INITIAL_SETTINGS, INITIAL_ORDERS, INITIAL_PAGES } from '../constants';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, Firestore } from 'firebase/firestore';
 
-// Simulated Network Latency (ms) - This makes it feel like a real DB connection
-const LATENCY = 800;
+// --- CONFIGURATION TYPE ---
+export interface FirebaseConfig {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+}
 
+// Helper to simulate network latency for local mode
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const LATENCY = 600;
 
-// Helper to read/write from localStorage (Mocking a database table)
-const getTable = <T>(tableName: string, defaultData: T[]): T[] => {
-    const data = localStorage.getItem(tableName);
-    return data ? JSON.parse(data) : defaultData;
+// --- STORAGE HELPERS ---
+const getStorageKey = () => 'PHARMA_FIREBASE_CONFIG';
+
+export const getStoredFirebaseConfig = (): FirebaseConfig | null => {
+    const data = localStorage.getItem(getStorageKey());
+    try {
+        return data ? JSON.parse(data) : null;
+    } catch {
+        return null;
+    }
 };
 
-const saveTable = <T>(tableName: string, data: T[]) => {
-    localStorage.setItem(tableName, JSON.stringify(data));
+export const saveFirebaseConfig = (config: FirebaseConfig) => {
+    localStorage.setItem(getStorageKey(), JSON.stringify(config));
+    window.location.reload(); // Reload to initialize new DB connection
 };
 
-const getSettings = (): AppSettings => {
-    const data = localStorage.getItem('settings');
-    return data ? { ...INITIAL_SETTINGS, ...JSON.parse(data) } : INITIAL_SETTINGS;
+export const clearFirebaseConfig = () => {
+    localStorage.removeItem(getStorageKey());
+    window.location.reload();
 };
 
-// --- Database API Service ---
-// Replace the contents of these functions with actual fetch()/axios calls to connect to a real backend.
-export const db = {
+// --- DATABASE INTERFACE ---
+interface DBAdapter {
+    type: 'LOCAL' | 'CLOUD';
     products: {
-        getAll: async (): Promise<Product[]> => {
-            await delay(LATENCY);
-            return getTable('products', INITIAL_PRODUCTS);
-        },
-        save: async (product: Product): Promise<Product> => {
-            await delay(LATENCY / 2); // Writes are usually faster in UI perception
-            const products = getTable('products', INITIAL_PRODUCTS);
-            const index = products.findIndex(p => p.id === product.id);
-            if (index >= 0) products[index] = product;
-            else products.push(product);
-            saveTable('products', products);
-            return product;
-        },
-        delete: async (id: string): Promise<void> => {
-            await delay(LATENCY / 2);
-            const products = getTable('products', INITIAL_PRODUCTS);
-            saveTable('products', products.filter(p => p.id !== id));
-        }
-    },
-
+        getAll: () => Promise<Product[]>;
+        save: (p: Product) => Promise<Product>;
+        delete: (id: string) => Promise<void>;
+    };
     categories: {
-        getAll: async (): Promise<Category[]> => {
-            await delay(LATENCY);
-            return getTable('categories', INITIAL_CATEGORIES);
-        },
-        save: async (category: Category): Promise<Category> => {
-            await delay(LATENCY / 2);
-            const list = getTable('categories', INITIAL_CATEGORIES);
-            const index = list.findIndex(c => c.id === category.id);
-            if (index >= 0) list[index] = category;
-            else list.push(category);
-            saveTable('categories', list);
-            return category;
-        },
-        delete: async (id: string): Promise<void> => {
-            await delay(LATENCY / 2);
-            const list = getTable('categories', INITIAL_CATEGORIES);
-            saveTable('categories', list.filter(c => c.id !== id));
-        }
-    },
-
+        getAll: () => Promise<Category[]>;
+        save: (c: Category) => Promise<Category>;
+        delete: (id: string) => Promise<void>;
+    };
     stores: {
-        getAll: async (): Promise<Store[]> => {
-            await delay(LATENCY);
-            return getTable('stores', INITIAL_STORES);
-        },
-        save: async (store: Store): Promise<Store> => {
-            await delay(LATENCY / 2);
-            const list = getTable('stores', INITIAL_STORES);
-            const index = list.findIndex(s => s.id === store.id);
-            if (index >= 0) list[index] = store;
-            else list.push(store);
-            saveTable('stores', list);
-            return store;
-        },
-        delete: async (id: string): Promise<void> => {
-            await delay(LATENCY / 2);
-            const list = getTable('stores', INITIAL_STORES);
-            saveTable('stores', list.filter(s => s.id !== id));
-        }
-    },
-
+        getAll: () => Promise<Store[]>;
+        save: (s: Store) => Promise<Store>;
+        delete: (id: string) => Promise<void>;
+    };
     orders: {
-        getAll: async (): Promise<Order[]> => {
-            await delay(LATENCY);
-            return getTable('all_orders', INITIAL_ORDERS);
-        },
-        create: async (order: Order): Promise<Order> => {
-            await delay(LATENCY);
-            const list = getTable('all_orders', INITIAL_ORDERS);
-            list.unshift(order); // Add to top
-            saveTable('all_orders', list);
-            return order;
-        },
-        updateStatus: async (orderId: string, status: Order['status']): Promise<void> => {
-            await delay(LATENCY / 2);
-            const list = getTable('all_orders', INITIAL_ORDERS);
-            const order = list.find(o => o.id === orderId);
-            if (order) {
-                order.status = status;
-                saveTable('all_orders', list);
-            }
-        }
-    },
-
+        getAll: () => Promise<Order[]>;
+        create: (o: Order) => Promise<Order>;
+        updateStatus: (id: string, status: Order['status']) => Promise<void>;
+    };
     pages: {
-        getAll: async (): Promise<Page[]> => {
-            await delay(LATENCY);
-            return getTable('pages', INITIAL_PAGES);
-        },
-        save: async (page: Page): Promise<Page> => {
-            await delay(LATENCY / 2);
-            const list = getTable('pages', INITIAL_PAGES);
-            const index = list.findIndex(p => p.id === page.id);
-            if (index >= 0) list[index] = page;
-            else list.push(page);
-            saveTable('pages', list);
-            return page;
-        },
-        delete: async (id: string): Promise<void> => {
-            await delay(LATENCY / 2);
-            const list = getTable('pages', INITIAL_PAGES);
-            saveTable('pages', list.filter(p => p.id !== id));
-        }
-    },
-
+        getAll: () => Promise<Page[]>;
+        save: (p: Page) => Promise<Page>;
+        delete: (id: string) => Promise<void>;
+    };
     settings: {
-        get: async (): Promise<AppSettings> => {
-            await delay(LATENCY);
-            return getSettings();
+        get: () => Promise<AppSettings>;
+        save: (s: AppSettings) => Promise<AppSettings>;
+    };
+    auth: {
+        login: (e: string, p?: string) => Promise<User>;
+        logout: () => Promise<void>;
+        getCurrentUser: () => User | null;
+        updateUser: (u: User) => Promise<User>;
+    };
+}
+
+// --- LOCAL ADAPTER (localStorage) ---
+const LocalDB: DBAdapter = {
+    type: 'LOCAL',
+    products: {
+        getAll: async () => { await delay(LATENCY); return getTable('products', INITIAL_PRODUCTS); },
+        save: async (p) => { 
+            await delay(LATENCY/2); 
+            const list = getTable('products', INITIAL_PRODUCTS);
+            const idx = list.findIndex(x => x.id === p.id);
+            if(idx >= 0) list[idx] = p; else list.push(p);
+            saveTable('products', list);
+            return p;
         },
-        save: async (settings: AppSettings): Promise<AppSettings> => {
-            await delay(LATENCY / 2);
-            localStorage.setItem('settings', JSON.stringify(settings));
-            return settings;
+        delete: async (id) => {
+            await delay(LATENCY/2);
+            const list = getTable('products', INITIAL_PRODUCTS);
+            saveTable('products', list.filter(x => x.id !== id));
         }
     },
-
+    categories: {
+        getAll: async () => { await delay(LATENCY); return getTable('categories', INITIAL_CATEGORIES); },
+        save: async (c) => {
+            await delay(LATENCY/2);
+            const list = getTable('categories', INITIAL_CATEGORIES);
+            const idx = list.findIndex(x => x.id === c.id);
+            if(idx >= 0) list[idx] = c; else list.push(c);
+            saveTable('categories', list);
+            return c;
+        },
+        delete: async (id) => {
+            await delay(LATENCY/2);
+            const list = getTable('categories', INITIAL_CATEGORIES);
+            saveTable('categories', list.filter(x => x.id !== id));
+        }
+    },
+    stores: {
+        getAll: async () => { await delay(LATENCY); return getTable('stores', INITIAL_STORES); },
+        save: async (s) => {
+            await delay(LATENCY/2);
+            const list = getTable('stores', INITIAL_STORES);
+            const idx = list.findIndex(x => x.id === s.id);
+            if(idx >= 0) list[idx] = s; else list.push(s);
+            saveTable('stores', list);
+            return s;
+        },
+        delete: async (id) => {
+            await delay(LATENCY/2);
+            const list = getTable('stores', INITIAL_STORES);
+            saveTable('stores', list.filter(x => x.id !== id));
+        }
+    },
+    orders: {
+        getAll: async () => { await delay(LATENCY); return getTable('all_orders', INITIAL_ORDERS); },
+        create: async (o) => {
+            await delay(LATENCY);
+            const list = getTable('all_orders', INITIAL_ORDERS);
+            list.unshift(o);
+            saveTable('all_orders', list);
+            return o;
+        },
+        updateStatus: async (id, status) => {
+            await delay(LATENCY/2);
+            const list = getTable<Order>('all_orders', INITIAL_ORDERS);
+            const item = list.find(x => x.id === id);
+            if(item) { item.status = status; saveTable('all_orders', list); }
+        }
+    },
+    pages: {
+        getAll: async () => { await delay(LATENCY); return getTable('pages', INITIAL_PAGES); },
+        save: async (p) => {
+             await delay(LATENCY/2);
+             const list = getTable('pages', INITIAL_PAGES);
+             const idx = list.findIndex(x => x.id === p.id);
+             if(idx >= 0) list[idx] = p; else list.push(p);
+             saveTable('pages', list);
+             return p;
+        },
+        delete: async (id) => {
+            await delay(LATENCY/2);
+            const list = getTable('pages', INITIAL_PAGES);
+            saveTable('pages', list.filter(x => x.id !== id));
+        }
+    },
+    settings: {
+        get: async () => { await delay(LATENCY); return getTable('settings_obj', [INITIAL_SETTINGS])[0]; },
+        save: async (s) => { 
+            await delay(LATENCY/2); 
+            saveTable('settings_obj', [s]); 
+            return s; 
+        }
+    },
     auth: {
-        login: async (email: string, password?: string): Promise<User> => {
-            await delay(1000); // Simulate secure auth check
-            
-            // Hardcoded Admin Check
+        login: async (email, password) => {
+            await delay(800);
             if (email === 'admin@gmail.com' && password === 'Dark360@') {
-                const admin: User = { 
-                    id: 'admin-1', 
-                    name: 'Administrator', 
-                    email, 
-                    savedAddresses: [], 
-                    orders: [], 
-                    role: 'admin' 
-                };
+                const admin: User = { id: 'admin-1', name: 'Administrator', email, savedAddresses: [], orders: [], role: 'admin' };
                 localStorage.setItem('currentUser', JSON.stringify(admin));
                 return admin;
             }
-
-            // Mock Customer Login
-            const user: User = {
-                id: 'user-' + Date.now(),
-                name: email.split('@')[0],
-                email: email,
-                savedAddresses: ['123 Main St, Cityville'],
-                orders: [],
-                role: 'customer'
-            };
+            const user: User = { id: 'u-'+Date.now(), name: email.split('@')[0], email, savedAddresses: ['123 Main St, Local'], orders: [], role: 'customer' };
             localStorage.setItem('currentUser', JSON.stringify(user));
             return user;
         },
-        logout: async (): Promise<void> => {
-            await delay(200);
-            localStorage.removeItem('currentUser');
-        },
-        getCurrentUser: (): User | null => {
-            const saved = localStorage.getItem('currentUser');
-            return saved ? JSON.parse(saved) : null;
-        },
-        updateUser: async (user: User): Promise<User> => {
-            await delay(300);
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            return user;
-        }
+        logout: async () => { localStorage.removeItem('currentUser'); },
+        getCurrentUser: () => { const s = localStorage.getItem('currentUser'); return s ? JSON.parse(s) : null; },
+        updateUser: async (u) => { localStorage.setItem('currentUser', JSON.stringify(u)); return u; }
     }
 };
+
+// --- CLOUD ADAPTER (Firebase) ---
+// Note: This requires valid credentials to work.
+let app: FirebaseApp | undefined;
+let dbInstance: Firestore | undefined;
+
+const initFirebase = (config: FirebaseConfig) => {
+    if (!getApps().length) {
+        try {
+            app = initializeApp(config);
+            dbInstance = getFirestore(app);
+            console.log("Firebase Initialized Successfully");
+        } catch (e) {
+            console.error("Firebase Init Failed:", e);
+        }
+    } else {
+        app = getApps()[0];
+        dbInstance = getFirestore(app);
+    }
+};
+
+const CloudDB = (): DBAdapter => {
+    if (!dbInstance) throw new Error("Firebase not initialized");
+    const fdb = dbInstance;
+
+    // Generic Firestore Helpers
+    const getCollection = async <T>(col: string, defaults: T[]): Promise<T[]> => {
+        try {
+            const snap = await getDocs(collection(fdb, col));
+            if (snap.empty) {
+                // If cloud is empty, return defaults (and maybe seed? skipping seed for safety)
+                return defaults; 
+            }
+            return snap.docs.map(d => d.data() as T);
+        } catch (e) {
+            console.error(`Error fetching ${col}:`, e);
+            return defaults;
+        }
+    };
+
+    const setItem = async <T extends {id: string}>(col: string, item: T) => {
+        await setDoc(doc(fdb, col, item.id), item);
+        return item;
+    };
+
+    const deleteItem = async (col: string, id: string) => {
+        await deleteDoc(doc(fdb, col, id));
+    };
+
+    return {
+        type: 'CLOUD',
+        products: {
+            getAll: () => getCollection('products', INITIAL_PRODUCTS),
+            save: (p) => setItem('products', p),
+            delete: (id) => deleteItem('products', id)
+        },
+        categories: {
+            getAll: () => getCollection('categories', INITIAL_CATEGORIES),
+            save: (c) => setItem('categories', c),
+            delete: (id) => deleteItem('categories', id)
+        },
+        stores: {
+            getAll: () => getCollection('stores', INITIAL_STORES),
+            save: (s) => setItem('stores', s),
+            delete: (id) => deleteItem('stores', id)
+        },
+        orders: {
+            getAll: () => getCollection('orders', INITIAL_ORDERS),
+            create: (o) => setItem('orders', o),
+            updateStatus: async (id, status) => {
+                await setDoc(doc(fdb, 'orders', id), { status }, { merge: true });
+            }
+        },
+        pages: {
+            getAll: () => getCollection('pages', INITIAL_PAGES),
+            save: (p) => setItem('pages', p),
+            delete: (id) => deleteItem('pages', id)
+        },
+        settings: {
+            get: async () => {
+                const list = await getCollection('settings', [INITIAL_SETTINGS]);
+                return list[0] || INITIAL_SETTINGS;
+            },
+            save: async (s) => {
+                await setDoc(doc(fdb, 'settings', 'global'), s);
+                return s;
+            }
+        },
+        // For simplicity, we keep Auth local in this demo even when using Cloud DB for data
+        // Integrating Firebase Auth is possible but requires UI changes for redirects etc.
+        auth: LocalDB.auth 
+    };
+};
+
+// --- INITIALIZATION ---
+let activeDB: DBAdapter = LocalDB;
+const storedConfig = getStoredFirebaseConfig();
+
+if (storedConfig && storedConfig.apiKey) {
+    initFirebase(storedConfig);
+    if (dbInstance) {
+        activeDB = CloudDB();
+    }
+}
+
+export const db = activeDB;
+
+// --- UTILS ---
+function getTable<T>(key: string, def: T[]): T[] {
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : def;
+}
+function saveTable(key: string, data: any) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
