@@ -5,12 +5,12 @@ import { FirebaseConfig } from './services/api';
 // --- DATABASE CONFIGURATION ---
 // PASTE YOUR FIREBASE KEYS HERE TO MAKE THEM STANDARD ACROSS ALL DEVICES
 export const FIREBASE_CONFIG: FirebaseConfig = {
-    apiKey: "", // e.g., "AIzaSy..."
-    authDomain: "", // e.g., "pharmacare.firebaseapp.com"
-    projectId: "", // e.g., "pharmacare"
-    storageBucket: "", // e.g., "pharmacare.appspot.com"
-    messagingSenderId: "", // e.g., "123456789"
-    appId: "" // e.g., "1:123456:web:abcdef"
+    apiKey: "AIzaSyBUDEulR3rG1W5s9WUx7QTu1tj2HvTrItU", // e.g., "AIzaSy..."
+    authDomain: "pharma-sam.firebaseapp.com", // e.g., "pharmacare.firebaseapp.com"
+    projectId: "pharma-sam", // e.g., "pharmacare"
+    storageBucket: "pharma-sam.firebasestorage.app", // e.g., "pharmacare.appspot.com"
+    messagingSenderId: "611472933048", // e.g., "123456789"
+    appId: "1:611472933048:web:668ed6ed7873a88228f44d" // e.g., "1:123456:web:abcdef"
 };
 
 export const INITIAL_CATEGORIES: Category[] = [
