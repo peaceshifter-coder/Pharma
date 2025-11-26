@@ -40,6 +40,27 @@ export const clearFirebaseConfig = () => {
     window.location.reload();
 };
 
+// Data Migration Helper
+const migrateProducts = (products: any[]): Product[] => {
+    return products.map(p => {
+        if (!p.images && p.imageUrl) {
+            return { ...p, images: [p.imageUrl], imageUrl: undefined };
+        }
+        if (!p.images) {
+            return { ...p, images: ['https://via.placeholder.com/400'] };
+        }
+        return p;
+    });
+};
+
+const migrateOrders = (orders: any[]): Order[] => {
+    return orders.map(o => ({
+        ...o,
+        items: migrateProducts(o.items)
+    }));
+}
+
+
 // --- DATABASE INTERFACE ---
 interface DBAdapter {
     type: 'LOCAL' | 'CLOUD';
@@ -84,10 +105,14 @@ interface DBAdapter {
 const LocalDB: DBAdapter = {
     type: 'LOCAL',
     products: {
-        getAll: async () => { await delay(LATENCY); return getTable('products', INITIAL_PRODUCTS); },
+        getAll: async () => { 
+            await delay(LATENCY); 
+            const raw = getTable('products', INITIAL_PRODUCTS);
+            return migrateProducts(raw);
+        },
         save: async (p) => { 
             await delay(LATENCY/2); 
-            const list = getTable('products', INITIAL_PRODUCTS);
+            const list = migrateProducts(getTable('products', INITIAL_PRODUCTS));
             const idx = list.findIndex(x => x.id === p.id);
             if(idx >= 0) list[idx] = p; else list.push(p);
             saveTable('products', list);
@@ -132,17 +157,21 @@ const LocalDB: DBAdapter = {
         }
     },
     orders: {
-        getAll: async () => { await delay(LATENCY); return getTable('all_orders', INITIAL_ORDERS); },
+        getAll: async () => { 
+            await delay(LATENCY); 
+            const raw = getTable('all_orders', INITIAL_ORDERS);
+            return migrateOrders(raw);
+        },
         create: async (o) => {
             await delay(LATENCY);
-            const list = getTable('all_orders', INITIAL_ORDERS);
+            const list = migrateOrders(getTable('all_orders', INITIAL_ORDERS));
             list.unshift(o);
             saveTable('all_orders', list);
             return o;
         },
         updateStatus: async (id, status) => {
             await delay(LATENCY/2);
-            const list = getTable<Order>('all_orders', INITIAL_ORDERS);
+            const list = migrateOrders(getTable<Order>('all_orders', INITIAL_ORDERS));
             const item = list.find(x => x.id === id);
             if(item) { item.status = status; saveTable('all_orders', list); }
         }
@@ -218,7 +247,7 @@ const CloudDB = (): DBAdapter => {
         try {
             const snap = await getDocs(collection(fdb, col));
             if (snap.empty) {
-                // If cloud is empty, return defaults (and maybe seed? skipping seed for safety)
+                // If cloud is empty, return defaults
                 return defaults; 
             }
             return snap.docs.map(d => d.data() as T);
@@ -240,7 +269,10 @@ const CloudDB = (): DBAdapter => {
     return {
         type: 'CLOUD',
         products: {
-            getAll: () => getCollection('products', INITIAL_PRODUCTS),
+            getAll: async () => {
+                const raw = await getCollection('products', INITIAL_PRODUCTS);
+                return migrateProducts(raw);
+            },
             save: (p) => setItem('products', p),
             delete: (id) => deleteItem('products', id)
         },
@@ -255,7 +287,10 @@ const CloudDB = (): DBAdapter => {
             delete: (id) => deleteItem('stores', id)
         },
         orders: {
-            getAll: () => getCollection('orders', INITIAL_ORDERS),
+            getAll: async () => {
+                const raw = await getCollection('orders', INITIAL_ORDERS);
+                return migrateOrders(raw);
+            },
             create: (o) => setItem('orders', o),
             updateStatus: async (id, status) => {
                 await setDoc(doc(fdb, 'orders', id), { status }, { merge: true });

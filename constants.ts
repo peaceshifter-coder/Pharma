@@ -5,12 +5,12 @@ import { FirebaseConfig } from './services/api';
 // --- DATABASE CONFIGURATION ---
 // PASTE YOUR FIREBASE KEYS HERE TO MAKE THEM STANDARD ACROSS ALL DEVICES
 export const FIREBASE_CONFIG: FirebaseConfig = {
-    apiKey: "AIzaSyBUDEulR3rG1W5s9WUx7QTu1tj2HvTrItU", // e.g., "AIzaSy..."
-    authDomain: "pharma-sam.firebaseapp.com", // e.g., "pharmacare.firebaseapp.com"
-    projectId: "pharma-sam", // e.g., "pharmacare"
-    storageBucket: "pharma-sam.firebasestorage.app", // e.g., "pharmacare.appspot.com"
-    messagingSenderId: "611472933048", // e.g., "123456789"
-    appId: "1:611472933048:web:668ed6ed7873a88228f44d" // e.g., "1:123456:web:abcdef"
+    apiKey: "", // e.g., "AIzaSy..."
+    authDomain: "", // e.g., "pharmacare.firebaseapp.com"
+    projectId: "", // e.g., "pharmacare"
+    storageBucket: "", // e.g., "pharmacare.appspot.com"
+    messagingSenderId: "", // e.g., "123456789"
+    appId: "" // e.g., "1:123456:web:abcdef"
 };
 
 export const INITIAL_CATEGORIES: Category[] = [
@@ -44,40 +44,52 @@ export const INITIAL_PRODUCTS: Product[] = [
   {
     id: '101',
     name: 'Advanced Pain Relief Gel',
-    description: 'Fast-acting gel for muscle and joint pain relief. Contains cooling menthol.',
+    description: 'Fast-acting gel for muscle and joint pain relief. Contains cooling menthol. Suitable for daily use.',
     price: 12.99,
     category: 'Pain Relief',
-    imageUrl: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400',
+    images: [
+        'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400',
+        'https://images.unsplash.com/photo-1550572017-edaa10706d43?auto=format&fit=crop&q=80&w=400',
+        'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=400'
+    ],
     stock: 50,
     requiresPrescription: false,
   },
   {
     id: '102',
     name: 'Multi-Vitamin Complex',
-    description: 'Complete daily vitamin supplement for overall health and immunity boost.',
+    description: 'Complete daily vitamin supplement for overall health and immunity boost. Contains Vitamins A, C, D, and E.',
     price: 24.50,
     category: 'Vitamins & Supplements',
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&q=80&w=400',
+    images: [
+        'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&q=80&w=400',
+        'https://images.unsplash.com/photo-1550572017-edaa10706d43?auto=format&fit=crop&q=80&w=400'
+    ],
     stock: 100,
     requiresPrescription: false,
   },
   {
     id: '103',
     name: 'Premium Bandages Pack',
-    description: 'Assorted sizes of waterproof bandages for cuts and scrapes.',
+    description: 'Assorted sizes of waterproof bandages for cuts and scrapes. Sterile and breathable.',
     price: 5.99,
     category: 'First Aid',
-    imageUrl: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=400',
+    images: [
+        'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=400'
+    ],
     stock: 200,
     requiresPrescription: false,
   },
   {
     id: '104',
     name: 'Hydrating Face Cream',
-    description: 'Gentle moisturizing cream for sensitive skin with aloe vera.',
+    description: 'Gentle moisturizing cream for sensitive skin with aloe vera. Paraben-free.',
     price: 18.75,
     category: 'Skin Care',
-    imageUrl: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=400',
+    images: [
+        'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=400',
+        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=400'
+    ],
     stock: 35,
     requiresPrescription: false,
   },

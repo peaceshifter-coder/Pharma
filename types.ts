@@ -5,7 +5,7 @@ export interface Product {
   description: string;
   price: number;
   category: string;
-  imageUrl: string;
+  images: string[];
   stock: number;
   requiresPrescription: boolean;
 }

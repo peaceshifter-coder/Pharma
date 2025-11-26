@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product, Store, Category, Order, Page } from '../types';
@@ -6,7 +7,7 @@ import {
   Trash2, Edit, Plus, MapPin, Package, 
   LayoutGrid, Settings, Activity, Sparkles, Save,
   ShoppingBag, ChevronDown, ChevronUp, CreditCard, Wallet, Truck, FileText,
-  Image as ImageIcon, Type, Link as LinkIcon, Phone, Mail, Globe, File, DollarSign, Database, Cloud, Wifi
+  Image as ImageIcon, Type, Link as LinkIcon, Phone, Mail, Globe, File, DollarSign, Database, Cloud, Wifi, X
 } from 'lucide-react';
 import { FirebaseConfig } from '../services/api';
 
@@ -31,6 +32,7 @@ export const AdminProducts = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +42,7 @@ export const AdminProducts = () => {
         description: formData.description || '',
         price: Number(formData.price) || 0,
         category: formData.category || categories[0]?.name || 'General',
-        imageUrl: formData.imageUrl || 'https://picsum.photos/200',
+        images: formData.images || ['https://via.placeholder.com/400'],
         stock: Number(formData.stock) || 0,
         requiresPrescription: formData.requiresPrescription || false,
     } as Product;
@@ -49,6 +51,7 @@ export const AdminProducts = () => {
     else addProduct(product);
     setIsEditing(false);
     setFormData({});
+    setNewImageUrl('');
   };
 
   const handleGenerateDescription = async () => {
@@ -58,6 +61,17 @@ export const AdminProducts = () => {
     setFormData(prev => ({ ...prev, description: desc }));
     setIsGenerating(false);
   };
+
+  const addImage = () => {
+      if(newImageUrl) {
+          setFormData(prev => ({ ...prev, images: [...(prev.images || []), newImageUrl] }));
+          setNewImageUrl('');
+      }
+  }
+
+  const removeImage = (index: number) => {
+      setFormData(prev => ({ ...prev, images: (prev.images || []).filter((_, i) => i !== index) }));
+  }
 
   if (isEditing) {
     return (
@@ -100,8 +114,28 @@ export const AdminProducts = () => {
           </div>
           
           <div>
-             <label className="block text-sm font-medium text-gray-700">Image URL</label>
-             <input className="w-full p-2 border border-gray-300 rounded mt-1 focus:ring-2 focus:ring-blue-500 outline-none" value={formData.imageUrl || ''} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+             <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (Add 3-4 images)</label>
+             <div className="flex gap-2 mb-2">
+                 <input 
+                    className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none" 
+                    placeholder="https://..." 
+                    value={newImageUrl} 
+                    onChange={e => setNewImageUrl(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())}
+                 />
+                 <button type="button" onClick={addImage} className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200"><Plus className="w-5 h-5"/></button>
+             </div>
+             <div className="grid grid-cols-4 gap-2">
+                 {(formData.images || []).map((img, idx) => (
+                     <div key={idx} className="relative group border rounded overflow-hidden aspect-square">
+                         <img src={img} alt="" className="w-full h-full object-cover" />
+                         <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+                             <X className="w-3 h-3" />
+                         </button>
+                     </div>
+                 ))}
+             </div>
+             {(formData.images || []).length === 0 && <p className="text-xs text-red-500 mt-1">At least one image is required.</p>}
           </div>
 
           <div className="flex items-center gap-2">
@@ -111,7 +145,7 @@ export const AdminProducts = () => {
 
           <div className="flex justify-end gap-2 pt-4">
             <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+            <button type="submit" disabled={!formData.images?.length} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 disabled:bg-gray-400">
                 <Save className="w-4 h-4" /> Save Product
             </button>
           </div>
@@ -124,7 +158,7 @@ export const AdminProducts = () => {
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Product Management</h2>
-        <button onClick={() => { setFormData({}); setIsEditing(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
+        <button onClick={() => { setFormData({ images: [] }); setIsEditing(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition">
             <Plus className="w-4 h-4" /> Add Product
         </button>
       </div>
@@ -132,7 +166,7 @@ export const AdminProducts = () => {
         {products.map(p => (
           <tr key={p.id} className="bg-white border-b hover:bg-gray-50">
             <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-2">
-                <img src={p.imageUrl} alt="" className="w-8 h-8 rounded object-cover" />
+                <img src={p.images[0]} alt="" className="w-8 h-8 rounded object-cover" />
                 {p.name}
             </td>
             <td className="px-6 py-4">{p.category}</td>
@@ -526,7 +560,7 @@ export const AdminOrders = () => {
                                             {order.items.map((item, idx) => (
                                                 <div key={idx} className="flex justify-between text-sm border-b border-gray-100 pb-1 last:border-0">
                                                     <span className="flex items-center gap-2">
-                                                        <img src={item.imageUrl} className="w-8 h-8 rounded object-cover" alt="" />
+                                                        <img src={item.images[0]} className="w-8 h-8 rounded object-cover" alt="" />
                                                         {item.name} <span className="text-gray-400">x{item.quantity}</span>
                                                         {item.requiresPrescription && <span className="text-xs text-red-500 font-bold bg-red-50 px-1 rounded">Rx</span>}
                                                         {item.prescriptionProof && (

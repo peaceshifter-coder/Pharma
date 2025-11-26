@@ -13,7 +13,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                 className="relative h-48 overflow-hidden bg-gray-50 cursor-pointer"
                 onClick={() => viewProduct(product)}
             >
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out" />
+                <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out" />
                 {product.requiresPrescription && (
                     <span className="absolute top-2 right-2 bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full border border-red-200 animate-scale-in">
                         Rx Required
@@ -48,6 +48,13 @@ export const ProductDetail = () => {
     const { selectedProduct, addToCart, navigate, formatPrice } = useApp();
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<'DESC' | 'INFO'>('DESC');
+    const [activeImage, setActiveImage] = useState('');
+
+    useEffect(() => {
+        if(selectedProduct && selectedProduct.images.length > 0) {
+            setActiveImage(selectedProduct.images[0]);
+        }
+    }, [selectedProduct]);
 
     if (!selectedProduct) {
         navigate('SHOP');
@@ -68,13 +75,24 @@ export const ProductDetail = () => {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     {/* Image Section */}
-                    <div className="bg-gray-50 p-8 flex items-center justify-center relative">
-                         <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="max-h-[500px] w-full object-contain rounded-lg shadow-sm mix-blend-multiply animate-scale-in" />
+                    <div className="bg-gray-50 p-8 flex flex-col items-center justify-center relative gap-4">
+                         <img src={activeImage} alt={selectedProduct.name} className="max-h-[400px] w-full object-contain rounded-lg shadow-sm mix-blend-multiply animate-scale-in" />
                          {selectedProduct.requiresPrescription && (
                             <div className="absolute top-4 left-4 bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 flex items-center gap-1 animate-fade-in">
                                 <AlertCircle className="w-3 h-3" /> Prescription Required
                             </div>
                         )}
+                        <div className="flex gap-3 overflow-x-auto w-full justify-center px-4 py-2">
+                            {selectedProduct.images.map((img, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => setActiveImage(img)}
+                                    className={`relative w-20 h-20 border-2 rounded-lg overflow-hidden shrink-0 transition-all ${activeImage === img ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Info Section */}
@@ -458,7 +476,7 @@ export const Checkout = () => {
                             {cart.map((item, idx) => (
                                 <div key={item.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
                                     <div className="flex gap-4">
-                                        <img src={item.imageUrl} alt={item.name} className="w-24 h-24 rounded-lg object-cover bg-gray-50" />
+                                        <img src={item.images[0]} alt={item.name} className="w-24 h-24 rounded-lg object-cover bg-gray-50" />
                                         <div className="flex-grow flex flex-col justify-between">
                                             <div>
                                                 <h3 className="font-bold text-gray-800">{item.name}</h3>
@@ -881,7 +899,7 @@ export const TrackOrder = () => {
                             <h3 className="font-bold text-gray-800 border-b pb-2">Order Items</h3>
                             {order.items.map((item, idx) => (
                                 <div key={idx} className="flex items-center gap-4 py-2">
-                                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-lg object-cover bg-gray-50" />
+                                    <img src={item.images[0]} alt={item.name} className="w-16 h-16 rounded-lg object-cover bg-gray-50" />
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-900">{item.name}</p>
                                         <p className="text-sm text-gray-500">{item.quantity} x {formatPrice(item.price)}</p>
