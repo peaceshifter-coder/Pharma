@@ -1,8 +1,9 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Product, Order } from '../types';
-import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X, Search, Package, LogIn } from 'lucide-react';
+import { calculateDistance } from '../services/geo';
+import { ShoppingCart, Plus, Minus, Trash2, CheckCircle, AlertCircle, ArrowLeft, Star, ShieldCheck, Truck, Clock, CreditCard, Banknote, FileText, Upload, X, Search, Package, LogIn, MapPin, Navigation } from 'lucide-react';
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     const { addToCart, viewProduct, formatPrice } = useApp();
@@ -329,14 +330,25 @@ export const Shop = () => {
 };
 
 export const Checkout = () => {
-    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings, attachPrescription, formatPrice } = useApp();
+    const { cart, updateCartQuantity, removeFromCart, placeOrder, navigate, user, settings, attachPrescription, formatPrice, nearestStore, userLocation } = useApp();
     const [step, setStep] = useState<'CART' | 'DETAILS' | 'SUCCESS'>('CART');
     const [loading, setLoading] = useState(false);
+    
+    // Controlled Form Inputs
     const [address, setAddress] = useState(user?.savedAddresses[0] || '');
+    const [firstName, setFirstName] = useState(user?.name.split(' ')[0] || '');
+    const [lastName, setLastName] = useState(user?.name.split(' ')[1] || '');
+    const [city, setCity] = useState('');
+    const [zip, setZip] = useState('');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(settings.paymentMethods.find(pm => pm.enabled)?.id || '');
+    
+    // Payment Details
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');
     const [cvc, setCvc] = useState('');
+
+    // Validation
+    const [errors, setErrors] = useState<{[key:string]: string}>({});
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const taxRate = settings.taxRate || 0;
@@ -356,7 +368,20 @@ export const Checkout = () => {
         }
     }, [settings.paymentMethods, selectedPaymentMethod]);
 
+    const validateForm = () => {
+        const newErrors: any = {};
+        if (!firstName.trim()) newErrors.firstName = "First name is required";
+        if (!lastName.trim()) newErrors.lastName = "Last name is required";
+        if (!address.trim()) newErrors.address = "Address is required";
+        if (!city.trim()) newErrors.city = "City is required";
+        if (!zip.trim()) newErrors.zip = "ZIP code is required";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }
+
     const handlePayment = () => {
+        if (!validateForm()) return;
+        
         setLoading(true);
         setTimeout(() => {
             placeOrder(address || "123 Guest St.", selectedPaymentMethod);
@@ -372,6 +397,15 @@ export const Checkout = () => {
             attachPrescription(productId, file.name);
         }
     };
+
+    const distanceInfo = useMemo(() => {
+        if (userLocation && nearestStore) {
+            const dist = calculateDistance(userLocation.lat, userLocation.lng, nearestStore.lat, nearestStore.lng);
+            if (dist < 1) return { text: `${(dist * 1000).toFixed(0)} meters`, raw: dist };
+            return { text: `${dist.toFixed(2)} km`, raw: dist };
+        }
+        return null;
+    }, [userLocation, nearestStore]);
 
     const availablePaymentMethods = settings.paymentMethods.filter(pm => pm.enabled);
 
@@ -490,6 +524,26 @@ export const Checkout = () => {
                         </>
                     ) : (
                         <div className="space-y-6 animate-fade-in">
+                            {/* Store Location Info */}
+                            {nearestStore && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-4">
+                                    <div className="bg-blue-100 p-2 rounded-full text-blue-600 mt-1">
+                                        <MapPin className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-blue-900">Delivery from Nearest Store</h3>
+                                        <p className="text-sm text-blue-800 font-semibold mt-1">{nearestStore.name}</p>
+                                        <p className="text-xs text-blue-600 mt-0.5">{nearestStore.address}</p>
+                                        {distanceInfo && (
+                                            <div className="mt-2 flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-200/50 px-2 py-1 rounded w-fit">
+                                                <Navigation className="w-3 h-3" />
+                                                <span>Distance: {distanceInfo.text}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Shipping Info */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                                 <h3 className="font-bold text-lg mb-4">Shipping Information</h3>
@@ -514,13 +568,58 @@ export const Checkout = () => {
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="First Name" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" defaultValue={user?.name.split(' ')[0]} />
-                                    <input type="text" placeholder="Last Name" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" defaultValue={user?.name.split(' ')[1]} />
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="First Name *" 
+                                            className={`border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none ${errors.firstName ? 'border-red-500' : ''}`}
+                                            value={firstName}
+                                            onChange={e => setFirstName(e.target.value)}
+                                        />
+                                        {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
+                                    </div>
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Last Name *" 
+                                            className={`border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none ${errors.lastName ? 'border-red-500' : ''}`} 
+                                            value={lastName}
+                                            onChange={e => setLastName(e.target.value)}
+                                        />
+                                        {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
+                                    </div>
                                 </div>
-                                <input type="text" placeholder="Address" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" value={address} onChange={e => setAddress(e.target.value)} />
+                                <div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Address *" 
+                                        className={`border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none ${errors.address ? 'border-red-500' : ''}`} 
+                                        value={address} 
+                                        onChange={e => setAddress(e.target.value)} 
+                                    />
+                                    {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="City" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
-                                    <input type="text" placeholder="ZIP Code" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="City *" 
+                                            className={`border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none ${errors.city ? 'border-red-500' : ''}`} 
+                                            value={city}
+                                            onChange={e => setCity(e.target.value)}
+                                        />
+                                        {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
+                                    </div>
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="ZIP Code *" 
+                                            className={`border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none ${errors.zip ? 'border-red-500' : ''}`} 
+                                            value={zip}
+                                            onChange={e => setZip(e.target.value)}
+                                        />
+                                        {errors.zip && <p className="text-xs text-red-500 mt-1">{errors.zip}</p>}
+                                    </div>
                                 </div>
                             </div>
 
