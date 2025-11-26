@@ -1,5 +1,6 @@
+
 import { Product, Category, Store, AppSettings, User, Order, Page } from '../types';
-import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_STORES, INITIAL_SETTINGS, INITIAL_ORDERS, INITIAL_PAGES } from '../constants';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_STORES, INITIAL_SETTINGS, INITIAL_ORDERS, INITIAL_PAGES, FIREBASE_CONFIG } from '../constants';
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, Firestore } from 'firebase/firestore';
 
@@ -275,18 +276,22 @@ const CloudDB = (): DBAdapter => {
                 return s;
             }
         },
-        // For simplicity, we keep Auth local in this demo even when using Cloud DB for data
-        // Integrating Firebase Auth is possible but requires UI changes for redirects etc.
         auth: LocalDB.auth 
     };
 };
 
 // --- INITIALIZATION ---
 let activeDB: DBAdapter = LocalDB;
-const storedConfig = getStoredFirebaseConfig();
 
-if (storedConfig && storedConfig.apiKey) {
-    initFirebase(storedConfig);
+// Determine which config to use
+const storedConfig = getStoredFirebaseConfig();
+const hardcodedConfig = FIREBASE_CONFIG;
+const validHardcoded = hardcodedConfig && hardcodedConfig.apiKey && hardcodedConfig.apiKey !== "";
+
+const activeConfig = validHardcoded ? hardcodedConfig : storedConfig;
+
+if (activeConfig && activeConfig.apiKey) {
+    initFirebase(activeConfig);
     if (dbInstance) {
         activeDB = CloudDB();
     }
